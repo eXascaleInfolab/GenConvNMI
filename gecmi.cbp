@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="gecmi" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/gecmi" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-Winit-self" />
+					<Add option="-Wfloat-equal" />
+					<Add option="-Winline" />
+					<Add option="-Wall" />
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/gecmi" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-march=core2" />
+					<Add option="-fomit-frame-pointer" />
+					<Add option="-O3" />
+					<Add option="-Wfatal-errors" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wnon-virtual-dtor" />
+			<Add option="-Wredundant-decls" />
+			<Add option="-Wcast-align" />
+			<Add option="-Wundef" />
+			<Add option="-Wunreachable-code" />
+			<Add option="-Wmissing-include-dirs" />
+			<Add option="-Weffc++" />
+			<Add option="-Wzero-as-null-pointer-constant" />
+			<Add option="-std=c++14" />
+			<Add option="-fexceptions" />
+			<Add directory="include" />
+		</Compiler>
+		<Linker>
+			<Add library="boost_program_options" />
+			<Add library="tbb" />
+			<Add library="pthread" />
+		</Linker>
+		<Unit filename="gecmi.cpp" />
+		<Unit filename="include/bigfloat.hpp" />
+		<Unit filename="include/bimap_cluster_populator.hpp" />
+		<Unit filename="include/calculate_till_tolerance.hpp" />
+		<Unit filename="include/cluster_reader.hpp" />
+		<Unit filename="include/confusion.hpp" />
+		<Unit filename="include/counts.hpp" />
+		<Unit filename="include/deep_complete_simulator.hpp" />
+		<Unit filename="include/parallel_worker.hpp" />
+		<Unit filename="include/player_automaton.hpp" />
+		<Unit filename="include/representants.hpp" />
+		<Unit filename="include/vertex_module_maps.hpp" />
+		<Unit filename="src/calculate_till_tolerance.cpp" />
+		<Unit filename="src/cluster_reader.cpp" />
+		<Unit filename="src/confusion.cpp" />
+		<Unit filename="src/deep_complete_simulator.cpp" />
+		<Unit filename="src/player_automaton.cpp" />
+		<Unit filename="src/representants.cpp" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<lib_finder disable_auto="1" />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
