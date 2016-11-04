@@ -11,8 +11,9 @@
 
 
 //constexpr size_t  EVCOUNT_THRESHOLD = 8192;
-constexpr size_t  EVCOUNT_GRAIN = 4096;
+constexpr size_t  EVCOUNT_GRAIN = 2048;
 // dblp:  128 -> ;  256 -> ;  512 -> ;  1024 ->
+// 50Kgt: 128 -> 2.75;  256 -> 2.63;  512 -> 2.6;  1024 -> 2.55;  >> 2048 -> 2.53; <<  4096 -> 2.8
 // 50K:   128 -> 2.9;  256 -> 2.87;  512 -> 2.86;  1024 -> 2.81;  2048 -> 2.8;  > 4096 -> 2.79 <
 
 namespace gecmi {
