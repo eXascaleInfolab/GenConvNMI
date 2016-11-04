@@ -5,7 +5,7 @@ The paper: [Comparing network covers using mutual information](https://arxiv.org
 (c) Alcides Viamontes Esquivel
 
 This is a refined version of the original [gecmi](https://bitbucket.org/dsign/gecmi) with additional features and improved performance, fully automated build and without the reduced dependencies (the Pyhton wrapper is removed). This version evaluates both NMI and FNMI (optionally) considering overlaps.  
-FNMI is the Fair NMI, see the paper [Is Normalized Mutual Information a Fair Measure for Comparing Community Detection Methods](http://ieeexplore.ieee.org/document/7403755/) by Alessia Amelio and Clara Pizzuti, ASONAM'15.  
+FNMI is the Fair NMI, see the paper [Is Normalized Mutual Information a Fair Measure for Comparing Community Detection Methods](http://ieeexplore.ieee.org/document/7403755/) by Alessia Amelio and Clara Pizzuti, ASONAM'15. However, FNMI is less meaningful and fair than the actual NMI, because this measure affects by the number of clusters much more than by the actual structure of clusters that should be evaluated.  
 Implemented by Artem Lutov <artem@exascale.info>
 
 ## Content
