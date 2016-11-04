@@ -49,7 +49,6 @@ The application uses files in CNL format:
 where each line corresponds to the network nodes forming the cluster (community, module).
 The [original `gecmi` format](https://github.com/eXascaleInfolab/GenConvMI#executable) is also supported.
  > The format is identified automatically from the file header (or it's absence).  
- If the node base of the specified files is different (for example you decided to take ground-truth as a subset of the top K larges clusters) then it will be automatically synchronized. I.e. the nodes that are not present in the ground-truth clusters (communities) will be removed (also as the empty resulting clusters). The exception is thrown if the synchronization is not possible (in case the node base was not just reduced, rather it was totally different).
 
 To get the normalized mutual information considering overlaps of two clusterings, execute:
 
@@ -69,8 +68,8 @@ Execution Options:
 -e [ --error ] arg (=0.01) admissible error
 ```
 If you want to tweak the precision, use the options `-e` and `-r`, to set the error and
-the risk respectively.  
-See the [paper](http://arxiv.org/abs/1202.0425) for the meaning of these concepts.
+the risk respectively. See the [paper](http://arxiv.org/abs/1202.0425) for the meaning of these concepts.  
+If the node base of the specified files is different (for example you decided to take the ground-truth clustering as a subset of the top K largest clusters) then it can be synchronized using the `-s` option. I.e. the nodes not present in the ground-truth clusters (communities) will be removed (also as the empty resulting clusters). The exception is thrown if the synchronization is not possible (in case the node base was not just reduced, rather it was totally different).
 
 # Related Projects
 - [PyCABeM](https://github.com/eXascaleInfolab/PyCABeM) - Python Benchmarking Framework for the Clustering Algorithms Evaluation. Uses extrinsic (NMIs) and intrinsic (Q) measures for the clusters quality evaluation considering overlaps (nodes membership by multiple clusters).
