@@ -23,7 +23,7 @@ int main( int argc, char* argv[])
 {
     po::options_description desc(
         "Invoke as : \n"
-        "    gecmi <options> <clu-file-1> <clu-file-2> \n"
+        "    gecmi [options] <clusters1> <clusters2>\n"
         "\n"
         "Allowed options: \n"
         );
@@ -35,6 +35,9 @@ int main( int argc, char* argv[])
         ("input",
             po::value<std::vector<string> >()->composing(),
             "name of the input files" )
+        ("sync,s", "synchronize the node base, for example to fairly evaluate against"
+            " top K selected clusters that cover only part of the original nodes")
+        ("fnmi,f", "evaluate also FNMI")
         ("risk,r",
             po::value<double>()->default_value(0.01),
             "probability of value being outside" )
@@ -43,7 +46,7 @@ int main( int argc, char* argv[])
             "admissible error" )
     ;
     po::variables_map vm;
-    po::store( po::command_line_parser( argc, argv)
+    po::store( po::command_line_parser(argc, argv)
        .options(desc)
        .positional(p).run(), vm
     );
@@ -55,18 +58,13 @@ int main( int argc, char* argv[])
     }
     std::vector< std::string > positionals;
     try {
-        positionals = vm["input"].as<
-            std::vector< std::string > >();
-    } catch ( boost::bad_any_cast const& )
-    {
+        positionals = vm["input"].as<std::vector<std::string> >();
+    } catch ( boost::bad_any_cast const& ) {
         cerr << "Please, provide two input files to proceed. Use `gecmi -h` for more info" << endl;
         throw;
     }
     if ( positionals.size() != 2 )
-    {
         throw std::invalid_argument("Please provide exactly two input files as input\n");
-    }
-
 
     std::ifstream in1(positionals[0].c_str() );
     if( !in1 )
@@ -76,6 +74,7 @@ int main( int argc, char* argv[])
     if( !in2 )
         throw std::system_error(errno, std::system_category(), "Could not open the second file\n");
 
+    // Read the clusters
     two_relations_ptr two_rel( new two_relations_t );
     bimap_cluster_populator  bcp1( two_rel->first );
     bimap_cluster_populator  bcp2( two_rel->second );
@@ -92,7 +91,7 @@ int main( int argc, char* argv[])
     );
 
     // Synchronize the number of nodes in both collections if required
-    {
+    if (vm.count("sync")) {
         const auto  b1lnum = bcp1.uniqlSize();
         const auto  b2lnum = bcp2.uniqlSize();
         if(b1lnum != b2lnum) {
@@ -115,11 +114,14 @@ int main( int argc, char* argv[])
     calculated_info_t cit = calculate_till_tolerance(
         two_rel, risk, epvar );
 
-    const auto b1rnum = bcp1.uniqrSize();
-    const auto b2rnum = bcp2.uniqrSize();
+    cout << "NMI: " << cit.nmi;
+    if (vm.count("fnmi")) {
+        const auto b1rnum = bcp1.uniqrSize();
+        const auto b2rnum = bcp2.uniqrSize();
 
-    cout << "NMI: " << cit.nmi << ", FNMI: " << cit.nmi * exp(-double(abs(b1rnum - b2rnum))
-        / std::max(b1rnum, b2rnum)) << " (cls1: " << b1rnum << ", cls2: " << b2rnum << ")\n";
+        cout << ", FNMI: " << cit.nmi * exp(-double(abs(b1rnum - b2rnum))
+            / std::max(b1rnum, b2rnum)) << " (cls1: " << b1rnum << ", cls2: " << b2rnum << ")\n";
+    } else cout << endl;
 
     return 0;
 }

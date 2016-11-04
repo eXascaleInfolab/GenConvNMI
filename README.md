@@ -4,7 +4,7 @@ Generalized Conventional Mutual Information (GenConvMI) - NMI for Overlapping cl
 The paper: [Comparing network covers using mutual information](https://arxiv.org/abs/1202.0425) by Alcides Viamontes Esquivel, Martin Rosval, 2012.  
 (c) Alcides Viamontes Esquivel
 
-This is a refined version of the original [gecmi](https://bitbucket.org/dsign/gecmi) with additional features and improved performance, fully automated build and without the reduced dependencies (the Pyhton wrapper is removed). This version evaluates both NMI and FNMI (considering overlaps).  
+This is a refined version of the original [gecmi](https://bitbucket.org/dsign/gecmi) with additional features and improved performance, fully automated build and without the reduced dependencies (the Pyhton wrapper is removed). This version evaluates both NMI and FNMI (optionally) considering overlaps.  
 FNMI is the Fair NMI, see the paper [Is Normalized Mutual Information a Fair Measure for Comparing Community Detection Methods](http://ieeexplore.ieee.org/document/7403755/) by Alessia Amelio and Clara Pizzuti, ASONAM'15.  
 Implemented by Artem Lutov <artem@exascale.info>
 
@@ -57,6 +57,17 @@ To get the normalized mutual information considering overlaps of two clusterings
 $ gecmi file1 file2
 ```
 
+Execution Options:
+```
+-h [ --help ]              produce help message
+--input arg                name of the input files
+-s [ --sync ]              synchronize the node base, for example to fairly
+													 evaluate against top K selected clusters that
+													 cover only part of the original nodes
+-f [ --fnmi ]              evaluate also FNMI
+-r [ --risk ] arg (=0.01)  probability of value being outside
+-e [ --error ] arg (=0.01) admissible error
+```
 If you want to tweak the precision, use the options `-e` and `-r`, to set the error and
 the risk respectively.  
 See the [paper](http://arxiv.org/abs/1202.0425) for the meaning of these concepts.
