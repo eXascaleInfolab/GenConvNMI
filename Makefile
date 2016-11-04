@@ -19,7 +19,7 @@ LIB = -lboost_program_options -ltbb -lpthread
 LDFLAGS = 
 
 INC_DEBUG = $(INC)
-CFLAGS_DEBUG = $(CFLAGS) -Winit-self -Wfloat-equal -Winline -Wall -g
+CFLAGS_DEBUG = $(CFLAGS) -Winit-self -Wfloat-equal -Winline -Wall -g -DDEBUG
 RESINC_DEBUG = $(RESINC)
 RCFLAGS_DEBUG = $(RCFLAGS)
 LIBDIR_DEBUG = $(LIBDIR)

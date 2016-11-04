@@ -10,8 +10,8 @@
 #include "calculate_till_tolerance.hpp"
 
 
-//constexpr size_t EVCOUNT_THRESHOLD = 8192;
-constexpr size_t EVCOUNT_GRAIN = 256;  // 128 -> 1.19;  256 -> 1.08;  512 -> 1.50  // 1024;  // 512
+constexpr size_t  EVCOUNT_THRESHOLD = 8192;
+constexpr size_t  EVCOUNT_GRAIN = 1024;  // <8K,mul>: 128 -> ,1.19;  256 -> 1.68,1.08;  512 -> 1,63,1.50;  1024 -> 1,6,;  2048 -> 1.62     // 512
 
 namespace gecmi {
 
@@ -47,9 +47,8 @@ calculated_info_t calculate_till_tolerance(
         bool raised = false;
         tbb::spin_mutex wait_for_matrix;
         try {
-            size_t  steps = rows * cols;
-            if(!steps)
-                steps = 1;
+            // Note: simple multiplication is not enough (yields NMI 1 for small changes even on middle-size networks)
+            const size_t  steps = std::max(rows * static_cast<size_t>(cols), EVCOUNT_THRESHOLD);
             parallel_for(
                 tbb::blocked_range< size_t >( 0, steps, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
                 direct_worker< counter_matrix_t* >( dcs, &cm, &wait_for_matrix )

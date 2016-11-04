@@ -1,11 +1,12 @@
 # GenConvNMI
-Generalized Conventional Mutual Information (GenConvMI) - NMI for Overlapping clusters compatible with standard NMI, pure C++ version producing a single executable.
+Generalized Conventional Mutual Information (GenConvMI) - NMI for Overlapping clusters compatible with standard [NMI](http://www.cs.plu.edu/courses/csce436/art%202.pdf) value, pure C++ version producing a single executable.
 
 The paper: [Comparing network covers using mutual information](https://arxiv.org/abs/1202.0425) by Alcides Viamontes Esquivel, Martin Rosval, 2012.  
 (c) Alcides Viamontes Esquivel
 
-This is a refined version of the original [gecmi](https://bitbucket.org/dsign/gecmi) with additional features, ~1.5 times better performance, fully automated build and without the reduced dependencies (the Pyhton wrapper is removed).  
-Modified and extended by Artem Lutov <artem@exascale.info>
+This is a refined version of the original [gecmi](https://bitbucket.org/dsign/gecmi) with additional features and improved performance, fully automated build and without the reduced dependencies (the Pyhton wrapper is removed). This version evaluates both NMI and FNMI (considering overlaps).  
+FNMI is the Fair NMI, see the paper [Is Normalized Mutual Information a Fair Measure for Comparing Community Detection Methods](http://ieeexplore.ieee.org/document/7403755/) by Alessia Amelio and Clara Pizzuti, ASONAM'15.  
+Implemented by Artem Lutov <artem@exascale.info>
 
 ## Content
 - [Deployment](#deployment)
@@ -16,7 +17,7 @@ Modified and extended by Artem Lutov <artem@exascale.info>
 
 # Deployment
 ## Dependencies
-For the *compilation*: 
+For the *compilation*:
 - [boost](http://www.boost.org/boost) >= v.1.47
 - [itbb](http://threadingbuildingblocks.org/itbb) >= v.3.0
 - g++ >= v.4.8
@@ -47,7 +48,8 @@ The application uses files in CNL format:
 ```
 where each line corresponds to the network nodes forming the cluster (community, module).
 The [original `gecmi` format](https://github.com/eXascaleInfolab/GenConvMI#executable) is also supported.
-*The format is identified automatically from the file header (or it's absence).*
+ > The format is identified automatically from the file header (or it's absence).  
+ If the node base of the specified files is different (for example you decided to take ground-truth as a subset of the top K larges clusters) then it will be automatically synchronized. I.e. the nodes that are not present in the ground-truth clusters (communities) will be removed (also as the empty resulting clusters). The exception is thrown if the synchronization is not possible (in case the node base was not just reduced, rather it was totally different).
 
 To get the normalized mutual information considering overlaps of two clusterings, execute:
 
@@ -61,5 +63,6 @@ See the [paper](http://arxiv.org/abs/1202.0425) for the meaning of these concept
 
 # Related Projects
 - [PyCABeM](https://github.com/eXascaleInfolab/PyCABeM) - Python Benchmarking Framework for the Clustering Algorithms Evaluation. Uses extrinsic (NMIs) and intrinsic (Q) measures for the clusters quality evaluation considering overlaps (nodes membership by multiple clusters).
+- [Overlapping-NMI](https://github.com/eXascaleInfolab/Overlapping-NMI) - Another method of the NMI evaluation for the overlapping clusters (communities) that is not compatible with the standard NMI value unlike GenConvNMI, but much faster (about one order faster).
 
 **Note:** Please, [star this project](https://github.com/eXascaleInfolab/GenConvNMI) if you use it.
