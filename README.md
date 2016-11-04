@@ -4,8 +4,8 @@ Generalized Conventional Mutual Information (GenConvMI) - NMI for Overlapping cl
 The paper: [Comparing network covers using mutual information](https://arxiv.org/abs/1202.0425) by Alcides Viamontes Esquivel, Martin Rosval, 2012.  
 (c) Alcides Viamontes Esquivel
 
-This is a refined version of the original [gecmi](https://bitbucket.org/dsign/gecmi) with additional features and improved performance, fully automated build and without the reduced dependencies (the Pyhton wrapper is removed). This version evaluates both NMI and FNMI (optionally) considering overlaps.  
-FNMI is the Fair NMI, see the paper [Is Normalized Mutual Information a Fair Measure for Comparing Community Detection Methods](http://ieeexplore.ieee.org/document/7403755/) by Alessia Amelio and Clara Pizzuti, ASONAM'15. However, FNMI is less meaningful and fair than the actual NMI, because this measure affects by the number of clusters much more than by the actual structure of clusters that should be evaluated.  
+This is a refined version of the original [gecmi](https://bitbucket.org/dsign/gecmi) with additional features, fully automated build and without the reduced dependencies (the Pyhton wrapper is removed). This version evaluates both NMI and FNMI (optionally) considering overlaps.  
+FNMI is the Fair NMI, see the paper [Is Normalized Mutual Information a Fair Measure for Comparing Community Detection Methods](http://ieeexplore.ieee.org/document/7403755/) by Alessia Amelio and Clara Pizzuti, ASONAM'15. However, FNMI is less meaningful and less fair than the standard NMI, because FNMI measure is affected by the number of clusters much more than by their actual structure that should be evaluated.  
 Implemented by Artem Lutov <artem@exascale.info>
 
 ## Content
@@ -47,8 +47,6 @@ The application uses files in CNL format:
 2
 ```
 where each line corresponds to the network nodes forming the cluster (community, module).
-The [original `gecmi` format](https://github.com/eXascaleInfolab/GenConvMI#executable) is also supported.
- > The format is identified automatically from the file header (or it's absence).  
 
 To get the normalized mutual information considering overlaps of two clusterings, execute:
 
