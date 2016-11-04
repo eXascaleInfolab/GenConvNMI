@@ -13,6 +13,18 @@ class bimap_cluster_populator;
 void sync(bimap_cluster_populator& bcp1, bimap_cluster_populator& bcp2);
 double fairRatio(const bimap_cluster_populator& bcp1, const bimap_cluster_populator& bcp2);
 
+template<typename MapT>
+size_t uniqSize(MapT& mc)
+{
+    size_t  num = 0;
+    for(const auto& ind = mc.begin(); ind != mc.end();) {
+        const_cast<typename MapT::iterator&>(ind) = mc.upper_bound(ind->first);
+        ++num;
+    }
+
+    return num;
+}
+
 // class bimap_cluster_populator {{{
 class bimap_cluster_populator:
     public mock_input_processor
@@ -21,19 +33,7 @@ class bimap_cluster_populator:
     friend double fairRatio(const bimap_cluster_populator& bcp1, const bimap_cluster_populator& bcp2);
 
     vertex_module_bimap_t& vmb;
-protected:
-    template<typename MapT>
-    static size_t uniqSize(MapT& mc)
-    {
-        size_t  num = 0;
-        for(const auto& ind = mc.begin(); ind != mc.end();) {
-            const_cast<typename MapT::iterator&>(ind) = mc.upper_bound(ind->first);
-            ++num;
-        }
-
-        return num;
-    }
-
+    // left: Nodes, right: Clusters
 public:
     typedef vertex_module_bimap_t::relation relation_t;
     bimap_cluster_populator( vertex_module_bimap_t& vmb ):
@@ -72,8 +72,8 @@ public:
 
         // Remove all the nodes with their relations that are absent in the base collection
         for(const auto& ind = vmb.left.begin(); ind != vmb.left.end();) {
-            if(bcpbase.vmb.left.find(ind->first) != bcpbase.vmb.left.end())
-                // Remove the absent node with all relations
+            // Remove the absent node with all relations
+            if(bcpbase.vmb.left.find(ind->first) == bcpbase.vmb.left.end())
                 //auto indn = vmb.left.erase(ind, vmb.left.upper_bound(ind->first));
                 const_cast<typename decltype(vmb.left)::iterator&>(ind)
                     = vmb.left.erase(ind, vmb.left.upper_bound(ind->first));

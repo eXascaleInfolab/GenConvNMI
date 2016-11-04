@@ -92,10 +92,10 @@ int main( int argc, char* argv[])
 
     // Synchronize the number of nodes in both collections if required
     if (vm.count("sync")) {
-        const auto  b1lnum = bcp1.uniqlSize();
-        const auto  b2lnum = bcp2.uniqlSize();
+        auto  b1lnum = bcp1.uniqlSize();
+        auto  b2lnum = bcp2.uniqlSize();
         if(b1lnum != b2lnum) {
-            std::cerr << "WARNING, the number of nodes is different in the collections: "
+            cerr << "WARNING, the number of nodes is different in the collections: "
                 << b1lnum << " vs " << b2lnum << ". The nodes"
                 " will be synchronized by removing non-matching ones from the largest collection\n";
             if(b1lnum < b2lnum)  // bcp1 is the base for the sync, the nodes are removed from bcp2
@@ -103,8 +103,12 @@ int main( int argc, char* argv[])
             else bcp1.sync(bcp2);  // bcp2 is the base for the sync, the nodes are removed from bcp1
 
             // Throw the exception if the synchronization is failed
-            if(bcp1.uniqlSize() != bcp2.uniqlSize())
+            b1lnum = bcp1.uniqlSize();
+            b2lnum = bcp2.uniqlSize();
+            if(b1lnum != b2lnum) {
+                cerr << "After the synchronization  b1lnum: " << b1lnum << ", b2lnum: " << b2lnum << endl;
                 throw std::domain_error("Input collections have different node base and can't be synchronized gracefully\n");
+            }
         }
     }
 

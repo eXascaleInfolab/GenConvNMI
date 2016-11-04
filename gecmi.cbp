@@ -60,7 +60,6 @@
 		<Unit filename="include/calculate_till_tolerance.hpp" />
 		<Unit filename="include/cluster_reader.hpp" />
 		<Unit filename="include/confusion.hpp" />
-		<Unit filename="include/counts.hpp" />
 		<Unit filename="include/deep_complete_simulator.hpp" />
 		<Unit filename="include/parallel_worker.hpp" />
 		<Unit filename="include/player_automaton.hpp" />

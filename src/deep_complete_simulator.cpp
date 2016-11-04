@@ -31,7 +31,7 @@ using std::endl;
 
 // What's the failure proportion before bailing out... if I get
 // at least this many failures, an excpetion will be raised.
-constexpr size_t MAX_ACCEPTABLE_FAILURES = 10;
+constexpr size_t MAX_ACCEPTABLE_FAILURES = 63;
 
 //__print p;
 
