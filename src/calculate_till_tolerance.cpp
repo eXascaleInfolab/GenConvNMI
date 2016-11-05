@@ -1,6 +1,6 @@
 #include <iostream>
 
-//#include <tbb/task_scheduler_init.h> // <-- For controlling number of working threads
+#include <tbb/task_scheduler_init.h> // <-- For controlling number of working threads
 #include "tbb/parallel_for.h"
 
 #include "bimap_cluster_populator.hpp"
@@ -13,6 +13,7 @@
 //constexpr size_t  EVCOUNT_THRESHOLD = 8192;
 constexpr size_t  EVCOUNT_GRAIN = 2048;
 // dblp:  128 -> ;  256 -> ;  512 -> ;  1024 ->
+//  The best value: 1024 .. 2048
 // 50Kgt: 128 -> 2.75;  256 -> 2.63;  512 -> 2.6;  1024 -> 2.55;  >> 2048 -> 2.53; <<  4096 -> 2.8
 // 50K:   128 -> 2.9;  256 -> 2.87;  512 -> 2.86;  1024 -> 2.81;  2048 -> 2.8;  > 4096 -> 2.79 <
 
@@ -41,8 +42,12 @@ calculated_info_t calculate_till_tolerance(
 
     deep_complete_simulator dcs( two_rel );
 
+    // Note: simple multiplication is not enough (yields NMI 1 for small changes even on middle-size networks)
+    //const size_t  steps = sqrt(uniqSize(two_rel->first.left) * uniqSize(two_rel->second.left));  // The expected number of communities should not increase the square root from the number of nodes
+    const size_t  steps = (rows - 1) * (cols - 1);
+
     // Use this to adjust number of threads
-    //tbb::task_scheduler_init tsi(1);
+    tbb::task_scheduler_init tsi;
 
     while( epvar < max_var )
     {
@@ -50,10 +55,6 @@ calculated_info_t calculate_till_tolerance(
         bool raised = false;
         tbb::spin_mutex wait_for_matrix;
         try {
-            // Note: simple multiplication is not enough (yields NMI 1 for small changes even on middle-size networks)
-            //const size_t  steps = std::max(rows * static_cast<size_t>(cols), EVCOUNT_THRESHOLD);
-            //const size_t  steps = sqrt(uniqSize(two_rel->first.left) * uniqSize(two_rel->second.left));  // The expected number of communities should not increase the square root from the number of nodes
-            const size_t  steps = (rows - 1) * (cols - 1);
             parallel_for(
                 tbb::blocked_range< size_t >( 0, steps, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
                 direct_worker< counter_matrix_t* >( dcs, &cm, &wait_for_matrix )
