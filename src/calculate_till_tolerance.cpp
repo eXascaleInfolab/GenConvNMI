@@ -42,9 +42,9 @@ calculated_info_t calculate_till_tolerance(
 
     deep_complete_simulator dcs( two_rel );
 
-    // Note: simple multiplication is not enough (yields NMI 1 for small changes even on middle-size networks)
-    //const size_t  steps = sqrt(uniqSize(two_rel->first.left) * uniqSize(two_rel->second.left));  // The expected number of communities should not increase the square root from the number of nodes
-    const size_t  steps = (rows - 1) * (cols - 1);
+    // The expected number of communities should not increase the square root from the number of nodes
+    const size_t  steps = std::min((rows - 1) * (cols - 1)
+        , sqrt(uniqSize(two_rel->first.left) * uniqSize(two_rel->second.left)));
 
     // Use this to adjust number of threads
     tbb::task_scheduler_init tsi;
@@ -52,7 +52,6 @@ calculated_info_t calculate_till_tolerance(
     while( epvar < max_var )
     {
 
-        bool raised = false;
         tbb::spin_mutex wait_for_matrix;
         try {
             parallel_for(
@@ -61,11 +60,6 @@ calculated_info_t calculate_till_tolerance(
             );
         } catch (tbb::tbb_exception const& e) {
             std::cout << "e" << std::endl;
-            raised = true;
-        }
-
-        if ( raised )
-        {
             throw std::runtime_error("SystemIsSuspiciuslyFailingTooMuch ctt (maybe your partition is not solvable?)");
         }
 
