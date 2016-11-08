@@ -41,7 +41,6 @@ struct direct_worker {
 
     void operator()( const tbb::blocked_range<size_t>& r ) const
     {
-        counter_matrix_t& cm = *counter_mat_p;
         for( size_t i=r.begin(); i != r.end(); ++i )
         {
             // Pure and safe memory access to (almost) unrelated
@@ -54,7 +53,7 @@ struct direct_worker {
             importance_float_t prob = sr.importance;
             {
                 tbb::spin_mutex::scoped_lock l(*wait_for_matrix);
-                cm( i1, i2 ) += prob; //
+                (*counter_mat_p)( i1, i2 ) += prob; //
             }
         }
     }

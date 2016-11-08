@@ -10,7 +10,7 @@
 namespace gecmi {
 
     struct player_automaton::pimpl_t {
-        remaining_modules_set_t rms;
+        remaining_modules_set_t rms;  // Note: rms size is usually 0, rarely up to ~4 on the 50 K nodes net
         bool operation_is_intersect;
 
         pimpl_t( remaining_modules_set_t const& rms_ ):
@@ -70,8 +70,10 @@ namespace gecmi {
 
     player_automaton::~player_automaton()
     {
-        if ( impl )
+        if ( impl ) {
             delete impl;
+            impl = nullptr;
+        }
     }
 
     void player_automaton::set_operation_kind( bool intersect )

@@ -35,7 +35,7 @@ class deep_complete_simulator {
     pimpl_t* impl;
 public:
     // Required for initialization
-    deep_complete_simulator( two_relations_ref vmb );
+    deep_complete_simulator( two_relations_ref vmb, vertices_t* verts=nullptr );
 
     // Required for pimpl
     ~deep_complete_simulator();
@@ -54,6 +54,8 @@ public:
     // Logic here: just get two numbers, a sample from the random
     // variable. The two numbers represent modules.
     simulation_result_t get_sample() const;
+
+    size_t vertices_num() const;
 };
 
 }  // gecmi

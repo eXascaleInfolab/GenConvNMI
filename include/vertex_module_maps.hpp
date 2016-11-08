@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <set>
+#include <vector>
 #include <utility>
 
 #include <boost/bimap/unordered_multiset_of.hpp>
@@ -32,6 +33,8 @@ typedef std::set< size_t > module_set_t;  // ATTENTIOM: must be an ORDERED conta
 
 typedef module_set_t  modules_set_t;
 typedef module_set_t  remaining_modules_set_t;
+
+typedef std::vector< size_t >  vertices_t;
 
 
 // I need a couple of bimaps to reflect to full thing structure...

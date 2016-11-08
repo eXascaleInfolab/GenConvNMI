@@ -3,6 +3,7 @@
 //#include <iostream> // For debug
 #include <type_traits>  // remove_reference_t, ...
 #include <random>
+#include <utility>  // forward
 #include <cassert>
 
 #include "representants.hpp"
@@ -29,41 +30,35 @@ struct deep_complete_simulator::pimpl_t {
     //   in the set of remaining vertices.
     //
     static std::random_device rd;
-    typedef std::mt19937 base_generator_type;
+    typedef std::mt19937 randgen_t;
     typedef std::mt19937::result_type  gen_seed_t;
-    //typedef std::uniform_int_distribution<uint32_t>  coin_distribution_type;
+    typedef std::uniform_int_distribution<uint32_t>  linear_distrib_t;
     typedef std::vector< importance_float_t > importance_vector_t;
 
     // For keeping the bi-correspondences; Vertex to modules bimaps
     two_relations_ref tworel;
 
     // The random number generator and everything else
-    base_generator_type rnd_generator;
+    randgen_t rndgen;
+    linear_distrib_t  lindis;
 
-    // How many vertices there are
-    std::vector< size_t >  vertices;
+    // Input vertices
+    vertices_t  verts;
 
 
-    // pimpl_t( two_relations_ptr vmb_ ) {{{
-    pimpl_t( two_relations_ref tworels, gen_seed_t seed=rd() ):
-        tworel( tworels ), rnd_generator( seed ),
+    pimpl_t( two_relations_ref tworels, vertices_t&& vertices, gen_seed_t seed=rd() ):
+        tworel( tworels ), rndgen( seed ),
+        lindis(0, vertices.size()),
         //vertex_count( get_vertex_count( vmb_.first ) )
         //repr2apprs( extract_representants( vmb_->first, vmb_->second ) )
-        vertices()
-    {
-        vertices.reserve( get_vertex_count( tworel.first ) );
-        auto& vmap = tworel.first.left;  // First vmap
-        // Fill the vertices
-        for(const auto& ind = vmap.begin(); ind != vmap.end();) {
-            vertices.push_back(ind->first);
-            const_cast<typename std::remove_reference_t<decltype(vmap)>::iterator&>(ind)
-                = vmap.equal_range(ind->first).second;
-        }
-#ifdef DEBUG
-        assert(vertices.size() == get_vertex_count( tworel.first )
-            && "The vertices both clusterings should be the same");
-#endif  // DEBUG
-    } // }}}
+        verts(std::move(vertices))  {}
+
+//    ~pimpl_t()
+//    {
+//        // Used for debugging
+//        static size_t num = 0;
+//        std::cout << ++num << " ~dcm pimpl" << std::endl;
+//    }
 
     // void get_modules( size_t vertex, module_set_t& mset1, module_set_t& mset2) const {{{
     // Given a vertex, populate two sets of modules
@@ -82,7 +77,6 @@ struct deep_complete_simulator::pimpl_t {
             mset2 );
     } // }}}
 
-    // simulation_result_t get_sample() {{{
     simulation_result_t get_sample()
     {
         simulation_result_t result(-1);
@@ -101,7 +95,7 @@ struct deep_complete_simulator::pimpl_t {
         //if(attempt_count  > 1)
         //    cout << "Attempts: " <<  attempt_count << endl;
         return result;
-    } // }}}
+    }
 
     // optional<...> try_get_sample() {{{
     //    This is indeed a huge method.
@@ -112,10 +106,10 @@ struct deep_complete_simulator::pimpl_t {
 
         // On the beginning, I need a random shuffle of the vertices, whatever
         // many they be.
-        std::shuffle( vertices.begin(), vertices.end(), rnd_generator );
+        std::shuffle( verts.begin(), verts.end(), rndgen );  // lindis(rd) wrapper
 
         // Get the sets of modules of the first vertex
-        size_t vertex = vertices[0];
+        size_t vertex = verts[0];
 
         module_set_t rm1, rm2;
         get_modules( vertex, rm1, rm2 );
@@ -133,13 +127,13 @@ struct deep_complete_simulator::pimpl_t {
         // the system is stuck, try something else...
         while(
             pa_status_t::going( pa1.get_status(), pa2.get_status() )
-            && used_vertex_index < vertices.size()
+            && used_vertex_index < verts.size()
         )
         {
-            vertex = vertices[ used_vertex_index ++ ];
+            vertex = verts[ used_vertex_index ++ ];
             get_modules( vertex, rm1, rm2 );
             // Now get the operation
-            bool do_intersection = rnd_generator() % 2;  // coin_dt(rd);
+            bool do_intersection = lindis(rndgen) % 2;
             pa1.set_operation_kind( do_intersection );
             pa2.set_operation_kind( do_intersection );
             pa1.take_set( rm1 );
@@ -169,8 +163,26 @@ struct deep_complete_simulator::pimpl_t {
 std::random_device deep_complete_simulator::pimpl_t::rd;
 
 // Required for initialization
-deep_complete_simulator::deep_complete_simulator( two_relations_ref vmb )
-    : impl( new pimpl_t( vmb ) )  {}
+deep_complete_simulator::deep_complete_simulator( two_relations_ref vmb, vertices_t* verts )
+: impl(nullptr)
+{
+    if(!verts) {
+        vertices_t  vertices;
+        vertices.reserve( get_vertex_count( vmb.first ) );
+        auto& vmap = vmb.first.left;  // First vmap
+        // Fill the vertices
+        for(const auto& ind = vmap.begin(); ind != vmap.end();) {
+            vertices.push_back(ind->first);
+            const_cast<typename std::remove_reference_t<decltype(vmap)>::iterator&>(ind)
+                = vmap.equal_range(ind->first).second;
+        }
+#ifdef DEBUG
+        assert(vertices.size() == get_vertex_count( vmb.first )
+            && "The vertices both clusterings should be the same");
+#endif  // DEBUG
+        impl = new pimpl_t( vmb, std::move(vertices) );
+    } else impl = new pimpl_t( vmb, vertices_t(*verts) );
+}
 
 // Required for pimpl
 deep_complete_simulator::~deep_complete_simulator()
@@ -179,6 +191,11 @@ deep_complete_simulator::~deep_complete_simulator()
         delete impl;
         impl = nullptr;
     }
+}
+
+size_t deep_complete_simulator::vertices_num() const
+{
+    return impl ? impl->verts.size() : 0;
 }
 
 auto deep_complete_simulator::operator= (deep_complete_simulator&& dcs) -> deep_complete_simulator&
@@ -199,7 +216,7 @@ simulation_result_t deep_complete_simulator::get_sample() const
 // Deterministic fork...
 deep_complete_simulator deep_complete_simulator::fork() const
 {
-    return deep_complete_simulator( impl->tworel );
+    return deep_complete_simulator( impl->tworel, &impl->verts );
 }
 
 }  // gecmi

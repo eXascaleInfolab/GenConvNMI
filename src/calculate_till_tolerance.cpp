@@ -46,8 +46,11 @@ calculated_info_t calculate_till_tolerance(
     // The expected number of communities should not increase the square root from the number of nodes
     // Note: such definition should yield faster computation when the number of clusters is huge
     // and their size is small (SNAP Amazon dataset)
+//    const size_t  steps = (rows - 1) * (cols - 1);
     const size_t  steps = std::min<size_t>((rows - 1) * (cols - 1)
-        , sqrt(uniqSize(two_rel.first.left) * uniqSize(two_rel.second.left))) * 0.8f;  // 0.75 - 0.85 (up to 1)
+        , dcs.vertices_num()) * 0.8f;  // 0.75 - 0.85 (up to 1)
+//    const size_t  steps = std::max<size_t>({rows - 1, cols - 1
+//        , size_t(sqrt(dcs.vertices_num()))});  // 0.75 - 0.85 (up to 1)
     //const size_t  steps = std::max<size_t>((rows - 1), (cols - 1));  // Note: not enough accurate
     //const size_t  steps = sqrt(std::max<size_t>(uniqSize(two_rel.first.left), uniqSize(two_rel.second.left)));
 

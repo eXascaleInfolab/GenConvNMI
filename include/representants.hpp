@@ -1,7 +1,6 @@
 #ifndef GECMI__REPRESENTANTS_HPP_
 #define GECMI__REPRESENTANTS_HPP_
 
-#include <unordered_set>
 #include <string>
 #include <functional>  // hash, function() wrapper
 #include <iostream>
@@ -10,8 +9,6 @@
 
 
 namespace gecmi {
-
-    typedef std::unordered_set< size_t > vertex_set_t;
 
     class representant_t {
 //    	modules_set_t first;
