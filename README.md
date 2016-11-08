@@ -4,8 +4,8 @@ Generalized Conventional Mutual Information (GenConvMI) - NMI for Overlapping cl
 The paper: [Comparing network covers using mutual information](https://arxiv.org/abs/1202.0425) by Alcides Viamontes Esquivel, Martin Rosval, 2012.  
 (c) Alcides Viamontes Esquivel
 
-This is a refined version of the original [gecmi](https://bitbucket.org/dsign/gecmi) with additional features, fully automated build and without the reduced dependencies (the Pyhton wrapper is removed). This version evaluates both NMI and FNMI (optionally) considering overlaps.  
-FNMI is the Fair NMI, see the paper [Is Normalized Mutual Information a Fair Measure for Comparing Community Detection Methods](http://ieeexplore.ieee.org/document/7403755/) by Alessia Amelio and Clara Pizzuti, ASONAM'15. However, FNMI is less meaningful and less fair than the standard NMI, because FNMI measure is affected by the number of clusters much more than by their actual structure that should be evaluated.  
+This is significantly reimplemented version of the original [gecmi](https://bitbucket.org/dsign/gecmi) with additional features, much better performance (~2 ORDERS faster, consumes 2x less memory and is more accurate on large networks than the original version), fully automated build and without the redundant dependencies (the Pyhton wrapper is removed). This version evaluates both NMI and FNMI (optionally) considering overlaps.  
+FNMI is so called *Fair NMI*, see the paper [Is Normalized Mutual Information a Fair Measure for Comparing Community Detection Methods](http://ieeexplore.ieee.org/document/7403755/) by Alessia Amelio and Clara Pizzuti, ASONAM'15. However, FNMI is less meaningful and less fair than the standard NMI, because FNMI measure is affected by the number of clusters much more than by their actual structure that should be evaluated.  
 Implemented by Artem Lutov <artem@exascale.info>
 
 ## Content
@@ -70,7 +70,8 @@ the risk respectively. See the [paper](http://arxiv.org/abs/1202.0425) for the m
 If the node base of the specified files is different (for example you decided to take the ground-truth clustering as a subset of the top K largest clusters) then it can be synchronized using the `-s` option. I.e. the nodes not present in the ground-truth clusters (communities) will be removed (also as the empty resulting clusters). The exception is thrown if the synchronization is not possible (in case the node base was not just reduced, rather it was totally different).
 
 # Related Projects
+- [OvpNMI](https://github.com/eXascaleInfolab/OvpNMI) - Another method of the NMI evaluation for the overlapping clusters (communities) that is not compatible with the standard NMI value unlike GenConvNMI, but it is much faster and yields exact results unlike probabilistic results with some variance in GenConvNMI.
+- [ExecTime](https://bitbucket.org/lumais/exectime/)  - A lightweight resource consumption profiler.
 - [PyCABeM](https://github.com/eXascaleInfolab/PyCABeM) - Python Benchmarking Framework for the Clustering Algorithms Evaluation. Uses extrinsic (NMIs) and intrinsic (Q) measures for the clusters quality evaluation considering overlaps (nodes membership by multiple clusters).
-- [Overlapping-NMI](https://github.com/eXascaleInfolab/Overlapping-NMI) - Another method of the NMI evaluation for the overlapping clusters (communities) that is not compatible with the standard NMI value unlike GenConvNMI, but much faster (about one order faster).
 
 **Note:** Please, [star this project](https://github.com/eXascaleInfolab/GenConvNMI) if you use it.
