@@ -20,7 +20,7 @@ constexpr size_t  EVCOUNT_GRAIN = 2048;
 namespace gecmi {
 
 calculated_info_t calculate_till_tolerance(
-    two_relations_ptr two_rel,
+    two_relations_ref two_rel,
     double risk , // <-- Upper bound of probabibility of the true value being
                   //  -- farthest from estimated value than the epvar
     double epvar
@@ -31,8 +31,8 @@ calculated_info_t calculate_till_tolerance(
     importance_vector_t norm_rows;
 
     // left: Nodes, right: Clusters
-    size_t rows = uniqSize(two_rel->first.right) + 1;
-    size_t cols = uniqSize(two_rel->second.right) + 1;
+    size_t rows = uniqSize(two_rel.first.right) + 1;
+    size_t cols = uniqSize(two_rel.second.right) + 1;
 
     counter_matrix_t cm =
         boost::numeric::ublas::zero_matrix< importance_float_t >( rows, cols );
@@ -43,8 +43,10 @@ calculated_info_t calculate_till_tolerance(
     deep_complete_simulator dcs( two_rel );
 
     // The expected number of communities should not increase the square root from the number of nodes
-    const size_t  steps = std::min((rows - 1) * (cols - 1)
-        , sqrt(uniqSize(two_rel->first.left) * uniqSize(two_rel->second.left)));
+    // Note: such definition should yield faster computation when the number of clusters is huge
+    // and their size is small (SNAP Amazon dataset)
+    const size_t  steps = std::min<size_t>((rows - 1) * (cols - 1)
+        , sqrt(uniqSize(two_rel.first.left) * uniqSize(two_rel.second.left)));
 
     // Use this to adjust number of threads
     tbb::task_scheduler_init tsi;

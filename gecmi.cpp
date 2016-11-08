@@ -1,4 +1,3 @@
-#include <map>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -74,10 +73,11 @@ int main( int argc, char* argv[])
     if( !in2 )
         throw std::system_error(errno, std::system_category(), "Could not open the second file\n");
 
+
     // Read the clusters
-    two_relations_ptr two_rel( new two_relations_t );
-    bimap_cluster_populator  bcp1( two_rel->first );
-    bimap_cluster_populator  bcp2( two_rel->second );
+    two_relations_t  two_rel;
+    bimap_cluster_populator  bcp1( two_rel.first );
+    bimap_cluster_populator  bcp2( two_rel.second );
     // bimap_cluster_populator:  left: Nodes, right: Clusters
 
     read_clusters_without_remappings(

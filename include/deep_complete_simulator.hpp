@@ -33,33 +33,35 @@ struct simulation_result_t {
 
 class deep_complete_simulator;
 
-typedef std::unique_ptr< deep_complete_simulator >
-    deep_complete_simulator_uptr;
-
+//template<typename T>
 class deep_complete_simulator {
     struct pimpl_t;
     pimpl_t* impl;
 public:
+//    static_assert(!T::hasher, "");
     // Required for initialization
-    deep_complete_simulator( two_relations_ptr vmb );
+    deep_complete_simulator( two_relations_ref vmb );
+
+    // Required for pimpl
+    ~deep_complete_simulator();
+
+    deep_complete_simulator(deep_complete_simulator&& dcs) = default;
+    deep_complete_simulator& operator= (deep_complete_simulator&&);
 
     // Forbid copying
     deep_complete_simulator( deep_complete_simulator const& ) = delete;
 
     deep_complete_simulator& operator= (const deep_complete_simulator&) = delete;
 
-    // For seeding the random number generator
-    void set_seed(size_t s);
+//    // For seeding the random number generator
+//    void set_seed(size_t s) const;
 
     // Deterministic fork...
-    deep_complete_simulator_uptr fork();
+    deep_complete_simulator fork() const;
 
     // Logic here: just get two numbers, a sample from the random
     // variable. The two numbers represent modules.
-    simulation_result_t get_sample();
-
-    // Required for pimpl
-    ~deep_complete_simulator();
+    simulation_result_t get_sample() const;
 };
 
 }  // gecmi

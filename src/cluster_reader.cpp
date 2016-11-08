@@ -26,10 +26,10 @@ void read_clusters_without_remappings(
         // Skip comments
         if(!tok || tok[0] == '#')
             continue;
-        ++iline;
+        ++iline;  // Start modules (clusters) id from 1
         do {
             inp_interf.add_vertex_module(stoul(tok), iline);
-        } while(tok = strtok(nullptr, " \t"));
+        } while((tok = strtok(nullptr, " \t")));
     }
 } // Reader function }}}
 

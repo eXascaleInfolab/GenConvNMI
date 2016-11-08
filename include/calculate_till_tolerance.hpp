@@ -14,7 +14,7 @@ struct calculated_info_t {
 };
 
 calculated_info_t calculate_till_tolerance(
-    two_relations_ptr two_rel,
+    two_relations_ref two_rel,
     double risk , // <-- Upper bound of probabibility of the true value being
                   //  -- farthest from estimated value than the epvar
     double epvar

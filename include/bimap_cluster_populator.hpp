@@ -1,6 +1,7 @@
 #ifndef  GECMI__BIMAP_CLUSTER_CALCULATOR_HPP_
 #define  GECMI__BIMAP_CLUSTER_CALCULATOR_HPP_
 
+#include <type_traits>
 #include <cassert>
 
 #include "vertex_module_maps.hpp"
@@ -18,7 +19,8 @@ size_t uniqSize(MapT& mc)
 {
     size_t  num = 0;
     for(const auto& ind = mc.begin(); ind != mc.end();) {
-        const_cast<typename MapT::iterator&>(ind) = mc.upper_bound(ind->first);
+        const_cast<typename std::remove_const_t<MapT>::iterator&>(ind)
+            = mc.equal_range(ind->first).second;
         ++num;
     }
 
@@ -44,7 +46,7 @@ public:
 
     virtual void add_vertex_module( int internal_vertex_id, int module_id )
     {
-        vmb.insert( relation_t( internal_vertex_id, module_id ) );
+        vmb.insert( typename vertex_module_bimap_t::value_type(internal_vertex_id, module_id) );
     };
 
     size_t uniqlSize() const  { return uniqSize(vmb.left); }
@@ -76,7 +78,7 @@ public:
             if(bcpbase.vmb.left.find(ind->first) == bcpbase.vmb.left.end())
                 //auto indn = vmb.left.erase(ind, vmb.left.upper_bound(ind->first));
                 const_cast<typename decltype(vmb.left)::iterator&>(ind)
-                    = vmb.left.erase(ind, vmb.left.upper_bound(ind->first));
+                    = vmb.left.erase(ind, vmb.left.equal_range(ind->first).second);
             else ++const_cast<typename decltype(vmb.left)::iterator&>(ind);
         }
     }

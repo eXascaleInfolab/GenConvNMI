@@ -1,8 +1,6 @@
 #ifndef CLUSTER_READER__CLUSTER_READER_HPP_
 #define CLUSTER_READER__CLUSTER_READER_HPP_
 
-#include <memory>
-
 
 namespace gecmi {
 
@@ -27,9 +25,6 @@ class mock_input_processor : public input_interface {
 public:
     virtual ~mock_input_processor() = default;
 };
-
-typedef std::shared_ptr< input_interface >
-    input_interface_ptr;
 
 // The name of this method reflects the fact that remappings
 // are not made in the numbers of vertices and modules

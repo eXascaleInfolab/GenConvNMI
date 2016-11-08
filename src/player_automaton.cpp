@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <iostream>
 
-#include <boost/range/algorithm/set_algorithm.hpp>
+#include <algorithm>  // set_intersection
 
 #include "player_automaton.hpp"
 
@@ -34,16 +34,14 @@ namespace gecmi {
             } else
             {
                 // Do the operation
-                auto oi = std::inserter( new_rms, new_rms.begin() );
                 if ( operation_is_intersect )
-                {
-                    boost::range::set_intersection( rms, mset, oi );
-                } else
-                {
+                    std::set_intersection(rms.begin(), rms.end(), mset.begin()
+                        , mset.end(), std::inserter(new_rms, new_rms.begin()));
+                else
                     // So, the new set is the result of the difference
                     // between the old and the taken set.
-                    boost::range::set_difference( rms, mset, oi );
-                }
+                    std::set_difference(rms.begin(), rms.end(), mset.begin()
+                        , mset.end(), std::inserter(new_rms, new_rms.begin()));
 
                 // Accept the operation only if it doesn't gets to a zero state
                 if ( new_rms.size() > 0)
