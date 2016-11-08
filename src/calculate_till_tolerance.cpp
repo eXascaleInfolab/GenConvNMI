@@ -10,8 +10,9 @@
 #include "calculate_till_tolerance.hpp"
 
 
-//constexpr size_t  EVCOUNT_THRESHOLD = 8192;
-constexpr size_t  EVCOUNT_GRAIN = 2048;
+constexpr size_t  EVCOUNT_THRESHOLD = 8192;
+constexpr size_t  EVCOUNT_GRAIN = 1536;  // 1024 .. 2048;  1536
+//constexpr size_t  EVCOUNT_GRAIN = 1024;
 // dblp:  128 -> ;  256 -> ;  512 -> ;  1024 ->
 //  The best value: 1024 .. 2048
 // 50Kgt: 128 -> 2.75;  256 -> 2.63;  512 -> 2.6;  1024 -> 2.55;  >> 2048 -> 2.53; <<  4096 -> 2.8
@@ -46,7 +47,9 @@ calculated_info_t calculate_till_tolerance(
     // Note: such definition should yield faster computation when the number of clusters is huge
     // and their size is small (SNAP Amazon dataset)
     const size_t  steps = std::min<size_t>((rows - 1) * (cols - 1)
-        , sqrt(uniqSize(two_rel.first.left) * uniqSize(two_rel.second.left)));
+        , sqrt(uniqSize(two_rel.first.left) * uniqSize(two_rel.second.left))) * 0.8f;  // 0.75 - 0.85 (up to 1)
+    //const size_t  steps = std::max<size_t>((rows - 1), (cols - 1));  // Note: not enough accurate
+    //const size_t  steps = sqrt(std::max<size_t>(uniqSize(two_rel.first.left), uniqSize(two_rel.second.left)));
 
     // Use this to adjust number of threads
     tbb::task_scheduler_init tsi;
@@ -57,6 +60,7 @@ calculated_info_t calculate_till_tolerance(
         tbb::spin_mutex wait_for_matrix;
         try {
             parallel_for(
+//                tbb::blocked_range< size_t >( 0, EVCOUNT_THRESHOLD, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
                 tbb::blocked_range< size_t >( 0, steps, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
                 direct_worker< counter_matrix_t* >( dcs, &cm, &wait_for_matrix )
             );

@@ -98,13 +98,9 @@ namespace gecmi {
     // importance_float_t zlog( importance_float_t x ) {{{
     importance_float_t zlog( importance_float_t x )
     {
-        if ( x <= 0 )
-        {
-            return std::numeric_limits<importance_float_t>::lowest();
-        } else
-        {
-            return log( x ) / log( 2 );
-        }
+        if(x > 0)
+            return log2( x );
+        else return std::numeric_limits<importance_float_t>::lowest();
     } // }}}
 
     // importance_float_t unnormalized_mi( norm_conf, norm_cols, norm_rows ) {{{

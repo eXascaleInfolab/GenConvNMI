@@ -53,11 +53,6 @@ public:
 
     size_t uniqrSize() const  { return uniqSize(vmb.right); }
 
-//    bool isSynced(const bimap_cluster_populator& bcpbase) const
-//    {
-//        return bcpbase.uniqlSize() == uniqlSize();  // The number of nodes is the same (the same node base)
-//    }
-
     //! \brief Synchronize nodes with the base collection
     //! \pre nodesize > bbcpbase nodes size
     //!

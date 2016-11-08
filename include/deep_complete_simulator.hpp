@@ -1,8 +1,6 @@
 #ifndef GECMI__DEEP_COMPLETE_SIMULATOR_HPP
 #define GECMI__DEEP_COMPLETE_SIMULATOR_HPP
 
-#include <utility>
-
 #include "vertex_module_maps.hpp"
 #include "bigfloat.hpp"
 
@@ -16,29 +14,26 @@ struct simulation_result_t {
     importance_float_t failed_attempts;
 
     simulation_result_t(
-        size_t first,
-        size_t second,
-        importance_float_t importance,
-        importance_float_t failed_attempts
-        ):
+        size_t first=0,
+        size_t second=0,
+        importance_float_t importance=0,
+        importance_float_t failed_attempts=0
+    ):
         first( first ) , second( second ) ,
         importance( importance ),
         failed_attempts(failed_attempts)
     {}
-
-    // Handy for empty init
-    simulation_result_t() = default;
+//
+//    // Handy for empty init
+//    simulation_result_t() = default;
 };
-//typedef std::pair< size_t, size_t > simulation_result_t;
 
 class deep_complete_simulator;
 
-//template<typename T>
 class deep_complete_simulator {
     struct pimpl_t;
     pimpl_t* impl;
 public:
-//    static_assert(!T::hasher, "");
     // Required for initialization
     deep_complete_simulator( two_relations_ref vmb );
 
@@ -52,9 +47,6 @@ public:
     deep_complete_simulator( deep_complete_simulator const& ) = delete;
 
     deep_complete_simulator& operator= (const deep_complete_simulator&) = delete;
-
-//    // For seeding the random number generator
-//    void set_seed(size_t s) const;
 
     // Deterministic fork...
     deep_complete_simulator fork() const;

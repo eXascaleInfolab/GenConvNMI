@@ -4,8 +4,6 @@
 #include <tbb/blocked_range.h>
 #include <tbb/spin_mutex.h>
 
-#include <boost/numeric/ublas/matrix.hpp>
-
 #include "deep_complete_simulator.hpp"
 
 
@@ -45,7 +43,6 @@ struct direct_worker {
     {
         counter_matrix_t& cm = *counter_mat_p;
         for( size_t i=r.begin(); i != r.end(); ++i )
-//        for(size_t i: r)
         {
             // Pure and safe memory access to (almost) unrelated
             // locations... (yet contigous, so cache might suffer...)

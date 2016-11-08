@@ -17,11 +17,8 @@ struct pa_status_t {
 
     static bool going( pa_status_t::t s1, pa_status_t::t s2 )
     {
-        return ( (s1 == SUCCESS ) and ( s2 == GOING ) )
-            or
-               ( (s1 == GOING   ) and ( s2 == SUCCESS ) )
-            or
-               ( (s1 == GOING   ) and ( s2 == GOING ) );
+        return (s1 == GOING && s2 != EMPTY_SET)
+            || (s2 == GOING && s1 != EMPTY_SET);
     }
 }; // }}}
 

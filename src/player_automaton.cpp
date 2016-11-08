@@ -26,13 +26,9 @@ namespace gecmi {
         // void take_set( module_set_t const& mset ) {{{
         void take_set( module_set_t const& mset )
         {
-            size_t rms_size = rms.size();
-            remaining_modules_set_t new_rms;
-            if ( rms_size == 0 or rms_size == 1 )
+            if ( rms.size() >= 2 )
             {
-                // Do nothing
-            } else
-            {
+                remaining_modules_set_t new_rms;
                 // Do the operation
                 if ( operation_is_intersect )
                     std::set_intersection(rms.begin(), rms.end(), mset.begin()
@@ -44,26 +40,22 @@ namespace gecmi {
                         , mset.end(), std::inserter(new_rms, new_rms.begin()));
 
                 // Accept the operation only if it doesn't gets to a zero state
-                if ( new_rms.size() > 0)
-                {
+                if ( !new_rms.empty() )
                 	rms = new_rms;
-                }
             }
+            // Else do nothing
         } // }}}
 
         // pa_status_t::t get_status() const {{{
         pa_status_t::t get_status() const
         {
-            if ( rms.size() == 0 )
-            {
-                return pa_status_t::EMPTY_SET;
-            } else if ( rms.size() == 1 )
-            {
-                return pa_status_t::SUCCESS;
-            } else
-            {
+            if ( rms.size() >= 2 )
                 return pa_status_t::GOING;
-            }
+
+            if ( rms.size() == 0 )
+                return pa_status_t::EMPTY_SET;
+
+            return pa_status_t::SUCCESS;
         } // }}}
 
         size_t get_a_module() const
@@ -73,11 +65,8 @@ namespace gecmi {
         }
     };
 
-    player_automaton::player_automaton(
-        remaining_modules_set_t const& rset):
-        impl(new pimpl_t( rset ) )
-    {
-    }
+    player_automaton::player_automaton(remaining_modules_set_t const& rset)
+    : impl(new pimpl_t( rset ) ) {}
 
     player_automaton::~player_automaton()
     {

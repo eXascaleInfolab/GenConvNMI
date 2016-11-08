@@ -4,7 +4,6 @@
 namespace gecmi {
 
 typedef double importance_float_t;
-typedef double importance_float_hi_t;
 
 } // namespace gecmi
 
