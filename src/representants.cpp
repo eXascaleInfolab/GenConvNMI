@@ -29,10 +29,10 @@ namespace gecmi{
 			out_mset2.insert(ivm->second);
     } // }}}
 
-    // size_t get_vertex_count( vertex_module_bimap_t const& vmb ) {{{
-    size_t get_vertex_count( vertex_module_bimap_t& vmb )
-    {
-    	return uniqSize(vmb.left);
-    } // }}}
+//    // size_t get_vertex_count( vertex_module_bimap_t const& vmb ) {{{
+//    size_t get_vertex_count( vertex_module_bimap_t& vmb )
+//    {
+//    	return uniqSize(vmb.left);
+//    } // }}}
 
 }  // gecmi

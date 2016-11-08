@@ -66,7 +66,7 @@ namespace gecmi {
         module_set_t& out_mset2
         );
 
-    size_t get_vertex_count( vertex_module_bimap_t& vmb );
+//    static size_t get_vertex_count( vertex_module_bimap_t& vmb );
 
     using std::ostream;
     inline ostream& operator<<( ostream& out, module_set_t const& mset )

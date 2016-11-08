@@ -41,14 +41,29 @@ calculated_info_t calculate_till_tolerance(
     importance_float_t nmi;
     importance_float_t max_var = 1.0e10;
 
-    deep_complete_simulator dcs( two_rel );
+
+    vertices_t  vertices;
+    vertices.reserve( uniqSize( two_rel.first.left ) );
+    auto& vmap = two_rel.first.left;  // First vmap
+    // Fill the vertices
+    for(const auto& ind = vmap.begin(); ind != vmap.end();) {
+        vertices.push_back(ind->first);
+        const_cast<typename std::remove_reference_t<decltype(vmap)>::iterator&>(ind)
+            = vmap.equal_range(ind->first).second;
+    }
+#ifdef DEBUG
+    assert(vertices.size() == uniqSize( two_rel.second.left )
+        && "The vertices both clusterings should be the same");
+#endif  // DEBUG
+
+    deep_complete_simulator dcs(two_rel, vertices);
 
     // The expected number of communities should not increase the square root from the number of nodes
     // Note: such definition should yield faster computation when the number of clusters is huge
     // and their size is small (SNAP Amazon dataset)
-//    const size_t  steps = (rows - 1) * (cols - 1);
-    const size_t  steps = std::min<size_t>((rows - 1) * (cols - 1)
-        , dcs.vertices_num()) * 0.8f;  // 0.75 - 0.85 (up to 1)
+    const size_t  steps = (rows - 1) * (cols - 1);
+//    const size_t  steps = std::min<size_t>((rows - 1) * (cols - 1)
+//        , dcs.vertices_num()) * 0.8f;  // 0.75 - 0.85 (up to 1)
 //    const size_t  steps = std::max<size_t>({rows - 1, cols - 1
 //        , size_t(sqrt(dcs.vertices_num()))});  // 0.75 - 0.85 (up to 1)
     //const size_t  steps = std::max<size_t>((rows - 1), (cols - 1));  // Note: not enough accurate

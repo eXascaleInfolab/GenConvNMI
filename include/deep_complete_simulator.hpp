@@ -35,7 +35,7 @@ class deep_complete_simulator {
     pimpl_t* impl;
 public:
     // Required for initialization
-    deep_complete_simulator( two_relations_ref vmb, vertices_t* verts=nullptr );
+    deep_complete_simulator( two_relations_ref vmb, vertices_t& verts);
 
     // Required for pimpl
     ~deep_complete_simulator();
