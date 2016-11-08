@@ -40,13 +40,26 @@ OBJDIR_RELEASE = obj/Release
 DEP_RELEASE = 
 OUT_RELEASE = bin/Release/gecmi
 
+INC_PROFILE = $(INC)
+CFLAGS_PROFILE = $(CFLAGS) -march=core2 -O3 -Wfatal-errors -pg
+RESINC_PROFILE = $(RESINC)
+RCFLAGS_PROFILE = $(RCFLAGS)
+LIBDIR_PROFILE = $(LIBDIR)
+LIB_PROFILE = $(LIB)
+LDFLAGS_PROFILE = $(LDFLAGS) -pg
+OBJDIR_PROFILE = obj/Profile
+DEP_PROFILE = 
+OUT_PROFILE = bin/Profile/gecmi
+
 OBJ_DEBUG = $(OBJDIR_DEBUG)/src/representants.o $(OBJDIR_DEBUG)/src/player_automaton.o $(OBJDIR_DEBUG)/src/deep_complete_simulator.o $(OBJDIR_DEBUG)/src/confusion.o $(OBJDIR_DEBUG)/src/cluster_reader.o $(OBJDIR_DEBUG)/src/calculate_till_tolerance.o $(OBJDIR_DEBUG)/gecmi.o
 
 OBJ_RELEASE = $(OBJDIR_RELEASE)/src/representants.o $(OBJDIR_RELEASE)/src/player_automaton.o $(OBJDIR_RELEASE)/src/deep_complete_simulator.o $(OBJDIR_RELEASE)/src/confusion.o $(OBJDIR_RELEASE)/src/cluster_reader.o $(OBJDIR_RELEASE)/src/calculate_till_tolerance.o $(OBJDIR_RELEASE)/gecmi.o
 
-all: debug release
+OBJ_PROFILE = $(OBJDIR_PROFILE)/src/representants.o $(OBJDIR_PROFILE)/src/player_automaton.o $(OBJDIR_PROFILE)/src/deep_complete_simulator.o $(OBJDIR_PROFILE)/src/confusion.o $(OBJDIR_PROFILE)/src/cluster_reader.o $(OBJDIR_PROFILE)/src/calculate_till_tolerance.o $(OBJDIR_PROFILE)/gecmi.o
 
-clean: clean_debug clean_release
+all: debug release profile
+
+clean: clean_debug clean_release clean_profile
 
 before_debug: 
 	test -d bin/Debug || mkdir -p bin/Debug
@@ -126,5 +139,44 @@ clean_release:
 	rm -rf $(OBJDIR_RELEASE)/src
 	rm -rf $(OBJDIR_RELEASE)
 
-.PHONY: before_debug after_debug clean_debug before_release after_release clean_release
+before_profile: 
+	test -d bin/Profile || mkdir -p bin/Profile
+	test -d $(OBJDIR_PROFILE)/src || mkdir -p $(OBJDIR_PROFILE)/src
+	test -d $(OBJDIR_PROFILE) || mkdir -p $(OBJDIR_PROFILE)
+
+after_profile: 
+
+profile: before_profile out_profile after_profile
+
+out_profile: before_profile $(OBJ_PROFILE) $(DEP_PROFILE)
+	$(LD) $(LIBDIR_PROFILE) -o $(OUT_PROFILE) $(OBJ_PROFILE)  $(LDFLAGS_PROFILE) $(LIB_PROFILE)
+
+$(OBJDIR_PROFILE)/src/representants.o: src/representants.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c src/representants.cpp -o $(OBJDIR_PROFILE)/src/representants.o
+
+$(OBJDIR_PROFILE)/src/player_automaton.o: src/player_automaton.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c src/player_automaton.cpp -o $(OBJDIR_PROFILE)/src/player_automaton.o
+
+$(OBJDIR_PROFILE)/src/deep_complete_simulator.o: src/deep_complete_simulator.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c src/deep_complete_simulator.cpp -o $(OBJDIR_PROFILE)/src/deep_complete_simulator.o
+
+$(OBJDIR_PROFILE)/src/confusion.o: src/confusion.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c src/confusion.cpp -o $(OBJDIR_PROFILE)/src/confusion.o
+
+$(OBJDIR_PROFILE)/src/cluster_reader.o: src/cluster_reader.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c src/cluster_reader.cpp -o $(OBJDIR_PROFILE)/src/cluster_reader.o
+
+$(OBJDIR_PROFILE)/src/calculate_till_tolerance.o: src/calculate_till_tolerance.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c src/calculate_till_tolerance.cpp -o $(OBJDIR_PROFILE)/src/calculate_till_tolerance.o
+
+$(OBJDIR_PROFILE)/gecmi.o: gecmi.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c gecmi.cpp -o $(OBJDIR_PROFILE)/gecmi.o
+
+clean_profile: 
+	rm -f $(OBJ_PROFILE) $(OUT_PROFILE)
+	rm -rf bin/Profile
+	rm -rf $(OBJDIR_PROFILE)/src
+	rm -rf $(OBJDIR_PROFILE)
+
+.PHONY: before_debug after_debug clean_debug before_release after_release clean_release before_profile after_profile clean_profile
 
