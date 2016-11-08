@@ -6,7 +6,6 @@
 
 namespace gecmi{
 
-    // void get_modules( vertex, vmb1, vmb2, o1, o2 ) {{{
     void get_modules(
         size_t vertex,
         vertex_module_bimap_t const& vmb1,
@@ -27,7 +26,7 @@ namespace gecmi{
         range = vmb2.left.equal_range(vertex);
         for(auto ivm = range.first; ivm != range.second; ++ivm)
 			out_mset2.insert(ivm->second);
-    } // }}}
+    }
 
 //    // size_t get_vertex_count( vertex_module_bimap_t const& vmb ) {{{
 //    size_t get_vertex_count( vertex_module_bimap_t& vmb )

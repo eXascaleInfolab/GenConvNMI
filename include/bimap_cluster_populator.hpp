@@ -27,9 +27,7 @@ size_t uniqSize(MapT& mc)
     return num;
 }
 
-// class bimap_cluster_populator {{{
-class bimap_cluster_populator:
-    public mock_input_processor
+class bimap_cluster_populator: public input_interface
 {
     friend void sync(bimap_cluster_populator& bcp1, bimap_cluster_populator& bcp2);
     friend double fairRatio(const bimap_cluster_populator& bcp1, const bimap_cluster_populator& bcp2);
@@ -42,11 +40,16 @@ public:
         vmb(vmb)
     {}
 
-    virtual ~bimap_cluster_populator() = default;
-
-    virtual void add_vertex_module( int internal_vertex_id, int module_id )
+    void add_vertex_module( size_t internal_vertex_id, size_t module_id )
     {
         vmb.insert( typename vertex_module_bimap_t::value_type(internal_vertex_id, module_id) );
+    };
+
+    void reserve_vertices_modules( size_t vertices_num, size_t modules_num )
+    {
+        // Note: boost bimap of multiset does not have reserve()
+        //vmb.left.reserve(vertices_num);
+        //vmb.right.reserve(modules_num);
     };
 
     size_t uniqlSize() const  { return uniqSize(vmb.left); }
@@ -77,7 +80,7 @@ public:
             else ++const_cast<typename decltype(vmb.left)::iterator&>(ind);
         }
     }
-}; // class bimap_cluster_populator }}}
+}; // bimap_cluster_populator
 
 }  // gecmi
 

@@ -1,7 +1,4 @@
 #include <iterator>
-#include <algorithm>
-#include <iostream>
-
 #include <algorithm>  // set_intersection
 
 #include "player_automaton.hpp"

@@ -1,6 +1,4 @@
-// includes {{{
 #include <algorithm>
-//#include <iostream> // For debug
 #include <type_traits>  // remove_reference_t, ...
 #include <random>
 #include <utility>  // forward
@@ -9,7 +7,6 @@
 #include "representants.hpp"
 #include "player_automaton.hpp"
 #include "deep_complete_simulator.hpp"
-// }}}
 
 
 namespace gecmi {
@@ -49,8 +46,6 @@ struct deep_complete_simulator::pimpl_t {
     pimpl_t( two_relations_ref tworels, vertices_t& vertices, gen_seed_t seed=rd() ):
         tworel( tworels ), rndgen( seed ),
         lindis(0, vertices.size() - 1),
-        //vertex_count( get_vertex_count( vmb_.first ) )
-        //repr2apprs( extract_representants( vmb_->first, vmb_->second ) )
         verts(vertices)  {}
 
 //    ~pimpl_t()
@@ -60,7 +55,6 @@ struct deep_complete_simulator::pimpl_t {
 //        std::cout << ++num << " ~dcm pimpl" << std::endl;
 //    }
 
-    // void get_modules( size_t vertex, module_set_t& mset1, module_set_t& mset2) const {{{
     // Given a vertex, populate two sets of modules
     // with the corresponding modules according to
     // each correspondence.
@@ -75,7 +69,7 @@ struct deep_complete_simulator::pimpl_t {
             tworel.second,
             mset1,
             mset2 );
-    } // }}}
+    }
 
     simulation_result_t get_sample()
     {
@@ -101,9 +95,6 @@ struct deep_complete_simulator::pimpl_t {
     //    This is indeed a huge method.
     void try_get_sample(simulation_result_t& result )  // The most heavy function !!!
     {
-        //coin_distribution_type coin_dt( 0, 1 );// This and the previous
-        // object are supposed to be lightweight...
-
         // On the beginning, I need a random shuffle of the vertices, whatever
         // many they be.
         //std::shuffle( verts.begin(), verts.end(), rndgen );  // lindis(rd) wrapper
@@ -157,7 +148,7 @@ struct deep_complete_simulator::pimpl_t {
             result.second = -1;
             result.importance = prob ;
         }
-    } // }}}
+    }
 
 }; // pimpl_t
 

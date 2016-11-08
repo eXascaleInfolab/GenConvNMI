@@ -13,29 +13,19 @@ struct simulation_result_t {
     importance_float_t importance;
     importance_float_t failed_attempts;
 
-    simulation_result_t(
-        size_t first=0,
-        size_t second=0,
+    simulation_result_t(size_t first=0, size_t second=0,
         importance_float_t importance=0,
         importance_float_t failed_attempts=0
-    ):
-        first( first ) , second( second ) ,
-        importance( importance ),
-        failed_attempts(failed_attempts)
-    {}
-//
-//    // Handy for empty init
-//    simulation_result_t() = default;
+    ): first(first), second(second), importance(importance),
+        failed_attempts(failed_attempts)  {}
 };
-
-class deep_complete_simulator;
 
 class deep_complete_simulator {
     struct pimpl_t;
     pimpl_t* impl;
 public:
     // Required for initialization
-    deep_complete_simulator( two_relations_ref vmb, vertices_t& verts);
+    deep_complete_simulator(two_relations_ref vmb, vertices_t& verts);
 
     // Required for pimpl
     ~deep_complete_simulator();

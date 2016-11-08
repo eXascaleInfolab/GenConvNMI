@@ -9,7 +9,6 @@
 
 namespace gecmi {
 
-// struct direct_worker {{{
 // Second, I will need several instances of the dcs to do
 // the work, so fork them... (fork function in deep_complete_simulator
 // takes care of doing a deterministic reseed of the randm
@@ -57,7 +56,7 @@ struct direct_worker {
             }
         }
     }
-}; // }}}
+};
 
 }  // gecmi
 

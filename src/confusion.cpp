@@ -2,9 +2,6 @@
 #include <limits>
 
 #include <boost/numeric/ublas/vector.hpp>
-//#include <boost/numeric/ublas/io.hpp>
-//#include <boost/format.hpp>
-
 #include <boost/math/special_functions/beta.hpp>
 
 #include "confusion.hpp"

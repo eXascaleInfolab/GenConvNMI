@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include <cstring>
+#include <cstring>  // strtok
 
 #include "cluster_reader.hpp"
 
@@ -24,6 +24,8 @@ void read_clusters_without_remappings(
         char *tok = strtok(const_cast<char*>(line.data()), " \t");
 
         // Skip comments
+        // Note: Boost bimap of multiset does not support .reserve(),
+        // so do not look for the header
         if(!tok || tok[0] == '#')
             continue;
         ++iline;  // Start modules (clusters) id from 1

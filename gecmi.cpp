@@ -11,6 +11,7 @@
 #include "calculate_till_tolerance.hpp"
 
 using std::string;
+using std::vector;
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -32,7 +33,7 @@ int main( int argc, char* argv[])
     desc.add_options()
         ("help,h", "produce help message")
         ("input",
-            po::value<std::vector<string> >()->composing(),
+            po::value<vector<string> >()->composing(),
             "name of the input files" )
         ("sync,s", "synchronize the node base, for example to fairly evaluate against"
             " top K selected clusters that cover only part of the original nodes")
@@ -55,9 +56,9 @@ int main( int argc, char* argv[])
         cout << desc << endl;
         return 1;
     }
-    std::vector< std::string > positionals;
+    vector< string > positionals;
     try {
-        positionals = vm["input"].as<std::vector<std::string> >();
+        positionals = vm["input"].as<vector<string> >();
     } catch ( boost::bad_any_cast const& ) {
         cerr << "Please, provide two input files to proceed. Use `gecmi -h` for more info" << endl;
         throw;

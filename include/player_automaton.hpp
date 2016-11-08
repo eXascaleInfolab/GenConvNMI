@@ -6,7 +6,6 @@
 
 namespace gecmi {
 
-// struct pa_status_t {{{
 // Player automaton status
 struct pa_status_t {
     enum t {
@@ -20,7 +19,7 @@ struct pa_status_t {
         return (s1 == GOING && s2 != EMPTY_SET)
             || (s2 == GOING && s1 != EMPTY_SET);
     }
-}; // }}}
+};
 
 // Represents the state information of a single player
 // on the simulation process.
@@ -28,7 +27,8 @@ class player_automaton {
     struct pimpl_t;
     pimpl_t *impl;
 public:
-    player_automaton (remaining_modules_set_t const& rset);
+    player_automaton(remaining_modules_set_t const& rset);
+    ~player_automaton();
 
     player_automaton(player_automaton const& other) = delete;
 
@@ -46,8 +46,6 @@ public:
     pa_status_t::t get_status() const;
 
     size_t get_a_module() const;
-
-    ~player_automaton ();
 };
 
 }  // gecmi
