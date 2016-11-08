@@ -10,13 +10,13 @@
 #include "calculate_till_tolerance.hpp"
 
 
-//constexpr size_t  EVCOUNT_THRESHOLD = 8192;
-constexpr size_t  EVCOUNT_GRAIN = 1536;  // 1024 .. 2048;  1536
-//constexpr size_t  EVCOUNT_GRAIN = 1024;
-// dblp:  128 -> ;  256 -> ;  512 -> ;  1024 ->
-//  The best value: 1024 .. 2048
-// 50Kgt: 128 -> 2.75;  256 -> 2.63;  512 -> 2.6;  1024 -> 2.55;  >> 2048 -> 2.53; <<  4096 -> 2.8
-// 50K:   128 -> 2.9;  256 -> 2.87;  512 -> 2.86;  1024 -> 2.81;  2048 -> 2.8;  > 4096 -> 2.79 <
+//constexpr size_t  EVCOUNT_THRESHOLD = 8192;  // Gives also good results on middle-size networks
+// Grain: 1024 .. 2048;  1536 is ~ the best on both middle-size and large networks
+// on the working laptop (4 cores Intel(R) Core(TM) i7-4600U CPU @ 2.10GHz-3.3 GHz)
+// Checked in the range 128 .. 8192
+// Note: it has not significant dependence on the taks complexity: the same value is
+// optimal using vector instantiation and shuffling
+constexpr size_t  EVCOUNT_GRAIN = 1536;
 
 namespace gecmi {
 
@@ -61,13 +61,7 @@ calculated_info_t calculate_till_tolerance(
     // The expected number of communities should not increase the square root from the number of nodes
     // Note: such definition should yield faster computation when the number of clusters is huge
     // and their size is small (SNAP Amazon dataset)
-    const size_t  steps = (rows - 1) * (cols - 1);
-//    const size_t  steps = std::min<size_t>((rows - 1) * (cols - 1)
-//        , dcs.vertices_num()) * 0.8f;  // 0.75 - 0.85 (up to 1)
-//    const size_t  steps = std::max<size_t>({rows - 1, cols - 1
-//        , size_t(sqrt(dcs.vertices_num()))});  // 0.75 - 0.85 (up to 1)
-    //const size_t  steps = std::max<size_t>((rows - 1), (cols - 1));  // Note: not enough accurate
-    //const size_t  steps = sqrt(std::max<size_t>(uniqSize(two_rel.first.left), uniqSize(two_rel.second.left)));
+    const size_t  steps = (rows - 1) * (cols - 1);  // Process all cells of the table
 
     // Use this to adjust number of threads
     tbb::task_scheduler_init tsi;
@@ -78,7 +72,6 @@ calculated_info_t calculate_till_tolerance(
         tbb::spin_mutex wait_for_matrix;
         try {
             parallel_for(
-//                tbb::blocked_range< size_t >( 0, EVCOUNT_THRESHOLD, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
                 tbb::blocked_range< size_t >( 0, steps, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
                 direct_worker< counter_matrix_t* >( dcs, &cm, &wait_for_matrix )
             );
