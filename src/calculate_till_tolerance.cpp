@@ -61,7 +61,7 @@ calculated_info_t calculate_till_tolerance(
     // The expected number of communities should not increase the square root from the number of nodes
     // Note: such definition should yield faster computation when the number of clusters is huge
     // and their size is small (SNAP Amazon dataset)
-    const size_t  steps = (rows - 1) * (cols - 1);  // Process all cells of the table
+//    const size_t  steps = (rows - 1) * (cols - 1);  // Process all cells of the table
 
     // Use this to adjust number of threads
     tbb::task_scheduler_init tsi;
@@ -72,7 +72,8 @@ calculated_info_t calculate_till_tolerance(
         tbb::spin_mutex wait_for_matrix;
         try {
             parallel_for(
-                tbb::blocked_range< size_t >( 0, steps, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
+//                tbb::blocked_range< size_t >( 0, steps, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
+                tbb::blocked_range< size_t >( 0, vertices.size() * 2, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
                 direct_worker< counter_matrix_t* >( dcs, &cm, &wait_for_matrix )
             );
         } catch (tbb::tbb_exception const& e) {
