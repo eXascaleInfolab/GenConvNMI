@@ -36,7 +36,7 @@ int main( int argc, char* argv[])
             po::value<vector<string> >()->composing(),
             "name of the input files" )
         ("sync,s", "synchronize the node base, for example to fairly evaluate against"
-            " top K selected clusters that cover only part of the original nodes")
+            " top K selected clusters that are subset of the original nodes")
         ("fnmi,f", "evaluate also FNMI")
         ("risk,r",
             po::value<double>()->default_value(0.01),
@@ -119,14 +119,14 @@ int main( int argc, char* argv[])
     calculated_info_t cit = calculate_till_tolerance(
         two_rel, risk, epvar );
 
-    cout << "NMI: " << cit.nmi;
     if (vm.count("fnmi")) {
+        cout << "NMI: " << cit.nmi;
         const auto b1rnum = bcp1.uniqrSize();
         const auto b2rnum = bcp2.uniqrSize();
 
         cout << ", FNMI: " << cit.nmi * exp(-double(abs(b1rnum - b2rnum))
             / std::max(b1rnum, b2rnum)) << " (cls1: " << b1rnum << ", cls2: " << b2rnum << ")\n";
-    } else cout << endl;
+    } else cout << cit.nmi << endl;
 
     return 0;
 }
