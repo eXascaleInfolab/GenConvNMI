@@ -22,11 +22,13 @@ namespace gecmi {
 
 calculated_info_t calculate_till_tolerance(
     two_relations_ref two_rel,
-    double risk , // <-- Upper bound of probabibility of the true value being
+    double risk , // <-- Upper bound of probability of the true value being
                   //  -- farthest from estimated value than the epvar
     double epvar
     )
 {
+    assert(risk > 0 && risk < 1 && epvar > 0 && epvar < 1 && "risk and epvar should E (0, 1)");
+
     importance_matrix_t norm_conf;
     importance_vector_t norm_cols;
     importance_vector_t norm_rows;
@@ -62,9 +64,22 @@ calculated_info_t calculate_till_tolerance(
 //    // Note: such definition should yield faster computation when the number of clusters is huge
 //    // and their size is small (SNAP Amazon dataset)
 //    const size_t  steps = (rows - 1) * (cols - 1);  // Process all cells of the table
-    const size_t  visrt = 2;  // Visiting ratio, any real value >= 1. The higher ration the higher accuracy and complexity.
-    // Note: visrt is taken 2, because min accuracy for a node =  1 / (node_degree=2) / (visrt=2) / 2 = 1 / 8 = 0.125 sounds like enough.
-    // For the whole network the accuracy is much higher.
+
+    // Evaluate required accuracy:
+    const double  acr = 2*risk/(risk + epvar)*epvar;
+    // Evaluate required visiting ratio:  node_acr_min >= (1 / (node_degree=2) / 2) ^ visrt
+    // Note: /2 because any link has 2 incident nodes and is evaluated from both sides
+    // P_lowest(link) occurs in case the node has 2 links and is equal to: (1/node_degree / 2)^visrt
+    // => visrt <= log_0.25(node_acr_min) = log_2(node_acr_min)/-2 < log2(acr) / -2
+    // Note: log2(acr=0..1) < 0   => log2(acr) / -2 > 0
+    // For the whole network the accuracy is much higher
+
+    // The expected number of vertices to process (considering multiple walks through the same vertex)
+    size_t  steps = vertices.size() * 0.65 * log2(acr) / -2;  // Note: *0.65 because anyway visrt is selected too large
+    if(steps < vertices.size() * 1.75f) {
+        //assert(0 && "The number of steps is expected to be at least twice the number of vertices");
+        steps = vertices.size() * 2;
+    }
 
     // Use this to adjust number of threads
     tbb::task_scheduler_init tsi;
@@ -75,11 +90,7 @@ calculated_info_t calculate_till_tolerance(
         tbb::spin_mutex wait_for_matrix;
         try {
             parallel_for(
-//                tbb::blocked_range< size_t >( 0, steps, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
-                // Note: vertices.size() * 2 because the matrixed is filled anyway by walking via the nodes,
-                // P_lowest(link) occurs in case the node has 2 links and is equal to 1/node_degree / visrt / 2
-                // / 2 because each link is evaluated from 2 incident nodes
-                tbb::blocked_range< size_t >( 0, vertices.size() * visrt, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
+                tbb::blocked_range< size_t >( 0, steps, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
                 direct_worker< counter_matrix_t* >( dcs, &cm, &wait_for_matrix )
             );
         } catch (tbb::tbb_exception const& e) {
