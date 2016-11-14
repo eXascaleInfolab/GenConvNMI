@@ -58,10 +58,13 @@ calculated_info_t calculate_till_tolerance(
 
     deep_complete_simulator dcs(two_rel, vertices);
 
-    // The expected number of communities should not increase the square root from the number of nodes
-    // Note: such definition should yield faster computation when the number of clusters is huge
-    // and their size is small (SNAP Amazon dataset)
+//    // The expected number of communities should not increase the square root from the number of nodes
+//    // Note: such definition should yield faster computation when the number of clusters is huge
+//    // and their size is small (SNAP Amazon dataset)
 //    const size_t  steps = (rows - 1) * (cols - 1);  // Process all cells of the table
+    const size_t  visrt = 2;  // Visiting ratio, any real value >= 1. The higher ration the higher accuracy and complexity.
+    // Note: visrt is taken 2, because min accuracy for a node =  1 / (node_degree=2) / (visrt=2) / 2 = 1 / 8 = 0.125 sounds like enough.
+    // For the whole network the accuracy is much higher.
 
     // Use this to adjust number of threads
     tbb::task_scheduler_init tsi;
@@ -73,7 +76,10 @@ calculated_info_t calculate_till_tolerance(
         try {
             parallel_for(
 //                tbb::blocked_range< size_t >( 0, steps, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
-                tbb::blocked_range< size_t >( 0, vertices.size() * 2, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
+                // Note: vertices.size() * 2 because the matrixed is filled anyway by walking via the nodes,
+                // P_lowest(link) occurs in case the node has 2 links and is equal to 1/node_degree / visrt / 2
+                // / 2 because each link is evaluated from 2 incident nodes
+                tbb::blocked_range< size_t >( 0, vertices.size() * visrt, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
                 direct_worker< counter_matrix_t* >( dcs, &cm, &wait_for_matrix )
             );
         } catch (tbb::tbb_exception const& e) {
