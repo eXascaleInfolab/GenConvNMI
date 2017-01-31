@@ -77,8 +77,8 @@ calculated_info_t calculate_till_tolerance(
     // The expected number of vertices to process (considering multiple walks through the same vertex)
     //size_t  steps = vertices.size() * 0.65 * log2(acr) / -2;  // Note: *0.65 because anyway visrt is selected too large
     float  avgdeg = 0.65f;  // Average degree, let it be 0.65 for 10K and decreasing on larger nets
-    const float  degrt = log2(vertices.size()) - log2(10000);
-    if(degrt > 1 / avgdeg)  // ~ >= 30 K
+    const float  degrt = log2(vertices.size()) - log2(8192);
+    if(degrt > 1 / avgdeg)  // ~ >= 13 K
         avgdeg = 1 / degrt;
     size_t  steps = vertices.size() * avgdeg * log2(acr) / -2;  // Note: *0.65 because anyway visrt is selected too large
     if(steps < vertices.size() * 1.75f * avgdeg) {
