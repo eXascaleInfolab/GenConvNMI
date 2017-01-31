@@ -37,7 +37,8 @@ void read_clusters_without_remappings(
                 continue;
         }
         do {
-            // Note: this algorithm does not support fuzzy overlaps (nodes with defined shares)
+            // Note: this algorithm does not support fuzzy overlaps (nodes with defined shares),
+            // the share part is skipped if exists
             inp_interf.add_vertex_module(stoul(tok), iline);
         } while((tok = strtok(nullptr, " \t")));
     }
