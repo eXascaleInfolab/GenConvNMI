@@ -49,8 +49,36 @@ public:
     {
         // Note: boost bimap of multiset does not have reserve()
         //vmb.left.reserve(vertices_num);
+        if(vertices_num)
+            vmb.left.rehash(vertices_num / vmb.left.max_load_factor() + 1);
+//        fprintf(stderr, "# Reserving. Nodes rehashed. Required %lu clusters, %lu nodes (%G buckets)"
+//            ";  preallocated %G clusters (lf: %G), %G nodes (lf: %G)\n"
+//            , modules_num, vertices_num, vertices_num / vmb.left.max_load_factor() + 1
+//            , vmb.right.bucket_count() * vmb.right.max_load_factor()
+//            , vmb.right.max_load_factor()
+//            , vmb.left.bucket_count() * vmb.left.max_load_factor()
+//            , vmb.left.max_load_factor());
         //vmb.right.reserve(modules_num);
+        if(modules_num)
+            vmb.right.rehash(modules_num / vmb.right.max_load_factor() + 1);
     };
+
+    void shrink_to_fit_modules()
+    {
+        // Rehash the nodes decreasing the allocated space and number of buckets
+        // for the faster iterating if required
+//        fprintf(stderr, "# Shrinking. Reserved %G clusters, %G nodes;  actual size is %lu clusters, %lu nodes\n"
+//            , vmb.right.bucket_count() * vmb.right.max_load_factor()
+//            , vmb.left.bucket_count() * vmb.left.max_load_factor()
+//            , vmb.right.size(), vmb.left.size());
+        if(vmb.left.size() < vmb.left.bucket_count() * vmb.left.max_load_factor() * 0.8f)
+            vmb.left.rehash(vmb.left.size() / vmb.left.max_load_factor() + 1);
+        if(vmb.right.size() < vmb.right.bucket_count() * vmb.right.max_load_factor() * 0.8f)
+            vmb.right.rehash(vmb.right.size() / vmb.right.max_load_factor() + 1);
+//        fprintf(stderr, "# Shrinking. Updated capacity is %G clusters, %G nodes\n"
+//            , vmb.right.bucket_count() * vmb.right.max_load_factor()
+//            , vmb.left.bucket_count() * vmb.left.max_load_factor());
+    }
 
     size_t uniqlSize() const  { return uniqSize(vmb.left); }
 

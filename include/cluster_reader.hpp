@@ -10,17 +10,16 @@ namespace gecmi {
 class input_interface {
 public:
     virtual void add_vertex_module( size_t internal_vertex_id, size_t module_id ) = 0;
-    virtual void reserve_vertices_modules( size_t vertices_num, size_t modules_num ) = 0;
+    virtual void reserve_vertices_modules( size_t vertices_num=0, size_t modules_num=0 ) = 0;
+    virtual void shrink_to_fit_modules() = 0;
 public:
     virtual ~input_interface() = default;
 };
 
 // The name of this method reflects the fact that remappings
 // are not made in the numbers of vertices and modules
-void read_clusters_without_remappings(
-    std::istream& input,
-    input_interface& inp_interf );
-
+void read_clusters_without_remappings(std::istream& input,
+    input_interface& inp_interf, const char* fname=nullptr );
 }  // gecmi
 
 #endif  // CLUSTER_READER__CLUSTER_READER_HPP_

@@ -73,13 +73,14 @@ struct deep_complete_simulator::pimpl_t {
 
     simulation_result_t get_sample()
     {
-        simulation_result_t result(-1);
+        constexpr static size_t  RESULT_NONE = -1;
+        simulation_result_t result(RESULT_NONE);
         uint32_t attempt_count = 0;
-        while ( result.first == -1 )
+        while ( result.first == RESULT_NONE )
         {
             //cout << "-" << endl;
             try_get_sample( result );  // The most heavy function !!!
-            if ( result.first == -1 )
+            if ( result.first == RESULT_NONE )
                 result.failed_attempts += result.importance;
             if ( ++attempt_count >= MAX_ACCEPTABLE_FAILURES )
                 throw std::runtime_error("SystemIsSuspiciuslyFailingTooMuch dcs (maybe your paritition is not solvable?)");

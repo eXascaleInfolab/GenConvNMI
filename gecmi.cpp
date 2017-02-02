@@ -83,12 +83,14 @@ int main( int argc, char* argv[])
 
     read_clusters_without_remappings(
         in1,
-        bcp1
+        bcp1,
+        positionals[0].c_str()
     );
 
     read_clusters_without_remappings(
         in2,
-        bcp2
+        bcp2,
+        positionals[1].c_str()
     );
 
     // Synchronize the number of nodes in both collections if required
