@@ -32,7 +32,7 @@ struct deep_complete_simulator::pimpl_t {
     typedef std::uniform_int_distribution<uint32_t>  linear_distrib_t;
     typedef std::vector< importance_float_t > importance_vector_t;
 
-    // For keeping the bi-correspondences; Vertex to modules bimaps
+    // For keeping the bi-correspondences; Two vertex to modules bimaps
     two_relations_ref tworel;
 
     // The random number generator and everything else
@@ -83,7 +83,7 @@ struct deep_complete_simulator::pimpl_t {
             if ( result.first == RESULT_NONE )
                 result.failed_attempts += result.importance;
             if ( ++attempt_count >= MAX_ACCEPTABLE_FAILURES )
-                throw std::runtime_error("SystemIsSuspiciuslyFailingTooMuch dcs (maybe your paritition is not solvable?)");
+                throw std::runtime_error("SystemIsSuspiciuslyFailingTooMuch dcs (maybe your partition is not solvable?)");
         }
 
         // Note: typically the number of attempts is 1
@@ -100,14 +100,14 @@ struct deep_complete_simulator::pimpl_t {
         // many they be.
         //std::shuffle( verts.begin(), verts.end(), rndgen );  // lindis(rd) wrapper
 
-        // Get the sets of modules of the first vertex
+        // Get the sets of modules (from 2 clusterings/partitions) for the first vertex
         size_t vertex = verts[lindis(rd)];  // 0
 
         module_set_t rm1, rm2;
         get_modules( vertex, rm1, rm2 );
 
         // The automatons that track the state
-        player_automaton pa1( rm1 ), pa2(rm2);
+        player_automaton pa1(rm1), pa2(rm2);
 
         // So, when we have to calculate the probability
         // even on the case that pa1 and pa2 be already
@@ -123,10 +123,21 @@ struct deep_complete_simulator::pimpl_t {
         )
         {
             ++used_vertex_index;
-            vertex = verts[ lindis(rndgen) ];  // used_vertex_index++
+
+            auto iv2 = lindis(rndgen);
+            vertex = verts[ iv2 ];
+
+//            const module_set_t&  rm = iv2 ? rm1 : rm2;
+//            auto iv2 = rndgen() % ;  // rd()
+//            lindis2
+//
+//            iv2 += used_vertex_index;
+//            iv2 %= 2;
+
             get_modules( vertex, rm1, rm2 );
             // Now get the operation
-            bool do_intersection = lindis(rndgen) % 2;
+            // Note: lindis(rndgen) gives better quality faster than rd()
+            bool do_intersection = (iv2 + used_vertex_index) % 2;  // (used_vertex_index + initial_iv2) % 2;  lindis(rndgen) % 2, used_vertex_index % 2
             pa1.set_operation_kind( do_intersection );
             pa2.set_operation_kind( do_intersection );
             pa1.take_set( rm1 );
@@ -142,12 +153,12 @@ struct deep_complete_simulator::pimpl_t {
         {
             result.first = pa1.get_a_module();
             result.second = pa2.get_a_module();
-            result.importance = prob ;
+            result.importance = prob;
         } else
         {
             result.first = -1;
             result.second = -1;
-            result.importance = prob ;
+            result.importance = prob;
         }
     }
 

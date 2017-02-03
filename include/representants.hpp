@@ -18,8 +18,9 @@ class representant_t {
 //    	modules_set_t second;
 
 	constexpr static size_t  hashlen = 3*2;  // In items (size_t): num, sum, sum2
-	size_t  hash[hashlen];
+
 	size_t  key;  // Required if used in the unordered containers
+	size_t  hash[hashlen];
 public:
 	representant_t(const modules_set_t& s1, const modules_set_t& s2)
 	//: first(s1), second(s2)
@@ -38,6 +39,7 @@ public:
 		}
 
 		//key = boost::hash_value(hash);
+		// or  std::hash<bitset<8*sizeof(hash)>>()(...)
 		key = std::hash<string>()(string(
 			reinterpret_cast<const char*>(hash), sizeof hash));
 	}
