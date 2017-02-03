@@ -6,6 +6,8 @@
 
 namespace gecmi {
 
+    using std::forward;
+
     struct player_automaton::pimpl_t {
         remaining_modules_set_t rms;  // Note: rms size is usually 0, rarely up to ~4 on the 50 K nodes net
         bool operation_is_intersect;
@@ -38,7 +40,7 @@ namespace gecmi {
 
                 // Accept the operation only if it doesn't gets to a zero state
                 if ( !new_rms.empty() )
-                	rms = new_rms;
+                	rms = move(new_rms);
             }
             // Else do nothing
         } // }}}
@@ -57,7 +59,9 @@ namespace gecmi {
 
         size_t get_a_module() const
         {
+#ifdef DEBUG
             assert( rms.size() == 1 );
+#endif // DEBUG
             return *rms.begin();
         }
     };

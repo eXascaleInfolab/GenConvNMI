@@ -44,6 +44,8 @@ int main( int argc, char* argv[])
         ("error,e",
             po::value<double>()->default_value(0.01),
             "admissible error" )
+        ("fast,a", "apply fast approximate evaluations, noticeable on dense"
+            "or large (> 15K nodes) networks" )
     ;
     po::variables_map vm;
     po::store( po::command_line_parser(argc, argv)
@@ -118,8 +120,7 @@ int main( int argc, char* argv[])
     double risk = vm["risk" ].as< double>();
     double epvar  = vm["error"].as<double>();
 
-    calculated_info_t cit = calculate_till_tolerance(
-        two_rel, risk, epvar );
+    calculated_info_t cit = calculate_till_tolerance( two_rel, risk, epvar, vm.count("fast") );
 
     if (vm.count("fnmi")) {
         cout << "NMI: " << cit.nmi;

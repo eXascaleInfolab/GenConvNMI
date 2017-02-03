@@ -24,7 +24,8 @@ calculated_info_t calculate_till_tolerance(
     two_relations_ref two_rel,
     double risk , // <-- Upper bound of probability of the true value being
                   //  -- farthest from estimated value than the epvar
-    double epvar
+    double epvar,
+    bool fasteval  // Use approximate fast evaluation
     )
 {
     assert(risk > 0 && risk < 1 && epvar > 0 && epvar < 1 && "risk and epvar should E (0, 1)");
@@ -54,8 +55,10 @@ calculated_info_t calculate_till_tolerance(
             = vmap.equal_range(ind->first).second;
     }
 #ifdef DEBUG
-    assert(vertices.size() == uniqSize( two_rel.second.left )
-        && "The vertices both clusterings should be the same");
+    const auto  vertDbgSize = uniqSize( two_rel.second.left );
+    if(vertices.size() != vertDbgSize)
+        throw std::domain_error("calculate_till_tolerance(), The vertices both clusterings should be the same: "
+            + std::to_string(vertices.size()) + " != " + std::to_string(vertDbgSize) + "\n");
 #endif  // DEBUG
 
     deep_complete_simulator dcs(two_rel, vertices);
@@ -76,10 +79,12 @@ calculated_info_t calculate_till_tolerance(
 
     // The expected number of vertices to process (considering multiple walks through the same vertex)
     //size_t  steps = vertices.size() * 0.65 * log2(acr) / -2;  // Note: *0.65 because anyway visrt is selected too large
-    float  avgdeg = 0.65f;  // Average degree, let it be 0.65 for 10K and decreasing on larger nets
-    const float  degrt = log2(vertices.size()) - log2(8192);
-    if(degrt > 1 / avgdeg)  // ~ >= 13 K
-        avgdeg = 1 / degrt;
+    float  avgdeg = fasteval ? 0.65f : 1;  // Average degree, let it be 0.65 for 10K and decreasing on larger nets
+    if(fasteval) {
+        const float  degrt = log2(vertices.size()) - log2(8192);
+        if(degrt > 1 / avgdeg)  // ~ >= 13 K
+            avgdeg = 1 / degrt;
+    }
     size_t  steps = vertices.size() * avgdeg * log2(acr) / -2;  // Note: *0.65 because anyway visrt is selected too large
     if(steps < vertices.size() * 1.75f * avgdeg) {
         //assert(0 && "The number of steps is expected to be at least twice the number of vertices");

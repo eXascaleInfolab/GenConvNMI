@@ -106,7 +106,11 @@ struct deep_complete_simulator::pimpl_t {
         module_set_t rm1, rm2;
         get_modules( vertex, rm1, rm2 );
 
+        // The number of attempts to get modules
+        const size_t  attempts = (rm1.size() + rm2.size()) * 2;
+
         // The automatons that track the state
+        //player_automaton pa1(move(rm1)), pa2(move(rm2));
         player_automaton pa1(rm1), pa2(rm2);
 
         // So, when we have to calculate the probability
@@ -119,20 +123,34 @@ struct deep_complete_simulator::pimpl_t {
         // the system is stuck, try something else...
         while(
             pa_status_t::going( pa1.get_status(), pa2.get_status() )
-            && used_vertex_index < verts.size()
+            //&& used_vertex_index < verts.size()
+            && used_vertex_index < attempts
         )
         {
             ++used_vertex_index;
 
-            auto iv2 = lindis(rndgen);
-            vertex = verts[ iv2 ];
+            // Parameters for the second vertex
 
-//            const module_set_t&  rm = iv2 ? rm1 : rm2;
-//            auto iv2 = rndgen() % ;  // rd()
-//            lindis2
-//
-//            iv2 += used_vertex_index;
-//            iv2 %= 2;
+            //auto iv2 = lindis(rndgen);
+            //vertex = verts[ iv2 ];
+
+            // Take modules from clustering 1 or 2 relevant to the origin vertex
+            const auto  iv2 = lindis(rd);
+            bool  v2first = iv2 % 2;
+            module_set_t  v2bms = move(v2first ? rm1 : rm2);  // Base modules for v2
+            // Select module (cluster) from which v2 will be selected
+            auto  iv2mod = v2bms.begin();
+            advance(iv2mod, iv2 % v2bms.size());
+            const auto&  mtov = (v2first ? tworel.first : tworel.second).right;
+            // Get range of the target vertices from the chosen module (cluster) to select v2
+            auto  iverts = mtov.equal_range(*iv2mod);
+#ifdef DEBUG
+            assert(iverts.first != iverts.second && iverts.first->first == *iv2mod
+                && "try_get_sample(), the module must have back relation to the vertex");
+#endif // DEBUG
+            advance(iverts.first, (iv2 + used_vertex_index)
+                % distance(iverts.first, iverts.second));
+            vertex = iverts.first->second;  // Get the target vertex
 
             get_modules( vertex, rm1, rm2 );
             // Now get the operation
@@ -143,9 +161,10 @@ struct deep_complete_simulator::pimpl_t {
             pa1.take_set( rm1 );
             pa2.take_set( rm2 );
         }
+//        if(used_vertex_index >= 5)
+//            printf("%lu ", used_vertex_index);
 
-        importance_float_t
-            prob = 1.0;
+        importance_float_t  prob = 1.0;
 
         // Now, if we managed to finish
         if ( pa1.get_status() == pa_status_t::SUCCESS
