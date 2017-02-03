@@ -100,6 +100,7 @@ struct deep_complete_simulator::pimpl_t {
     //    This is indeed a huge method.
     void try_get_sample(simulation_result_t& result )  // The most heavy function !!!
     {
+        result.importance = 1.0;  // Probability E [0, 1]
         // On the beginning, I need a random shuffle of the vertices, whatever
         // many they be.
         //std::shuffle( verts.begin(), verts.end(), rndgen );  // lindis(rd) wrapper
@@ -155,16 +156,36 @@ struct deep_complete_simulator::pimpl_t {
             auto ivt = iverts.first;
             advance(ivt, (iv2 + used_vertex_index) % distance(iverts.first, iverts.second));
             // Do not take the same vertex
-            if(vertex == ivt->second) {
+            if(ivt->second == vertex) {
                 if(++ivt == iverts.second)
                     ivt = iverts.first;
                 if(ivt->second == vertex) {
+                    // Single-node module occurred, find it's complement if possible
+                    // in the remained modules set
+                    v2bms = move(v2first ? rm2 : rm1);
+                    const auto&  mtov2 = (v2first ? tworel.second : tworel.first).right;
+                    for(auto v2mod: v2bms) {
+                        auto iv2s = mtov2.equal_range(v2mod);
+                        if(distance(iv2s.first, iv2s.second) == 1) {
+                            result.first = v2mod;
+                            result.second = *iv2mod;
+                            if(v2first) {
+                                result.first = result.second;
+                                result.second = v2mod;
+                            }
+                            return;
+                        }
+                    }
+                    // The match was not found, take another vertex
+                    iv2mod = v2bms.begin();
+                    advance(iv2mod, iv2 % v2bms.size());
+                    auto iv2s = mtov2.equal_range(*iv2mod);
 #ifdef DEBUG
-                    fprintf(stderr, "v: %lu,  rm1 size: %lu, rm2 size: %lu, distance: %lu\n"
-                        , vertex, rm1.size(), rm2.size(), distance(iverts.first, iverts.second));
+                    assert(iv2s.first != iv2s.second && iv2s.first->first == *iv2mod
+                        && "try_get_sample() 2, the module must have back relation to the vertex");
 #endif // DEBUG
-                    get_modules( vertex, rm1, rm2 );
-                    continue;
+                    ivt = iv2s.first;
+                    advance(ivt, (iv2 + used_vertex_index) % distance(iv2s.first, iv2s.second));
                 }
             }
             vertex = ivt->second;  // Get the target vertex
@@ -181,21 +202,13 @@ struct deep_complete_simulator::pimpl_t {
 //        if(used_vertex_index >= 5)
 //            printf("%lu ", used_vertex_index);
 
-        importance_float_t  prob = 1.0;
-
         // Now, if we managed to finish
         if ( pa1.get_status() == pa_status_t::SUCCESS
             && pa2.get_status() == pa_status_t::SUCCESS )
         {
             result.first = pa1.get_a_module();
             result.second = pa2.get_a_module();
-            result.importance = prob;
-        } else
-        {
-            result.first = -1;
-            result.second = -1;
-            result.importance = prob;
-        }
+        } else result.first = result.second = -1;
     }
 
 }; // pimpl_t
