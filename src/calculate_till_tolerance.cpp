@@ -20,6 +20,9 @@ constexpr size_t  EVCOUNT_GRAIN = 1536;
 
 namespace gecmi {
 
+using std::domain_error;
+using std::to_string;
+
 calculated_info_t calculate_till_tolerance(
     two_relations_ref two_rel,
     double risk , // <-- Upper bound of probability of the true value being
@@ -54,19 +57,14 @@ calculated_info_t calculate_till_tolerance(
         const_cast<typename std::remove_reference_t<decltype(vmap)>::iterator&>(ind)
             = vmap.equal_range(ind->first).second;
     }
-#ifdef DEBUG
+//#ifdef DEBUG
     const auto  vertDbgSize = uniqSize( two_rel.second.left );
     if(vertices.size() != vertDbgSize)
-        throw std::domain_error("calculate_till_tolerance(), The vertices both clusterings should be the same: "
-            + std::to_string(vertices.size()) + " != " + std::to_string(vertDbgSize) + "\n");
-#endif  // DEBUG
+        throw domain_error("calculate_till_tolerance(), The vertices of both clusterings should be the same: "
+            + to_string(vertices.size()) + " != " + to_string(vertDbgSize) + "\n");
+//#endif  // DEBUG
 
     deep_complete_simulator dcs(two_rel, vertices);
-
-//    // The expected number of communities should not increase the square root from the number of nodes
-//    // Note: such definition should yield faster computation when the number of clusters is huge
-//    // and their size is small (SNAP Amazon dataset)
-//    const size_t  steps = (rows - 1) * (cols - 1);  // Process all cells of the table
 
     // Evaluate required accuracy:
     const double  acr = 2*risk/(risk + epvar)*epvar;
@@ -96,7 +94,7 @@ calculated_info_t calculate_till_tolerance(
 
     while( epvar < max_var )
     {
-
+        // For the number of steps randomly selected vertices fill the matrix of modules (clusters) correspondence
         tbb::spin_mutex wait_for_matrix;
         try {
             parallel_for(
@@ -104,8 +102,7 @@ calculated_info_t calculate_till_tolerance(
                 direct_worker< counter_matrix_t* >( dcs, &cm, &wait_for_matrix )
             );
         } catch (tbb::tbb_exception const& e) {
-            std::cout << "e" << std::endl;
-            throw std::runtime_error("SystemIsSuspiciuslyFailingTooMuch ctt (maybe your partition is not solvable?)");
+            throw domain_error("SystemIsSuspiciuslyFailingTooMuch ctt (maybe your partition is not solvable?)\n");
         }
 
         size_t total_events = total_events_from_unmi_cm( cm );

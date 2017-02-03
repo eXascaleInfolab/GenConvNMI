@@ -13,7 +13,7 @@ namespace gecmi {
 
 using std::cout;
 using std::endl;
-
+using std::random_device;
 
 // What's the failure proportion before bailing out... if I get
 // at least this many failures, an excpetion will be raised.
@@ -26,7 +26,7 @@ struct deep_complete_simulator::pimpl_t {
     //   I need a random number generator that picks up a random vertex
     //   in the set of remaining vertices.
     //
-    static std::random_device rd;
+    static random_device rd;
     typedef std::mt19937 randgen_t;
     typedef std::mt19937::result_type  gen_seed_t;
     typedef std::uniform_int_distribution<uint32_t>  linear_distrib_t;
@@ -82,8 +82,12 @@ struct deep_complete_simulator::pimpl_t {
             try_get_sample( result );  // The most heavy function !!!
             if ( result.first == RESULT_NONE )
                 result.failed_attempts += result.importance;
-            if ( ++attempt_count >= MAX_ACCEPTABLE_FAILURES )
-                throw std::runtime_error("SystemIsSuspiciuslyFailingTooMuch dcs (maybe your partition is not solvable?)");
+            if ( ++attempt_count >= MAX_ACCEPTABLE_FAILURES ) {
+                //result.first = result.second = 0;
+                //result.importance = 0;
+                //break;
+                throw std::domain_error("SystemIsSuspiciuslyFailingTooMuch dcs (maybe your partition is not solvable?)\n");
+            }
         }
 
         // Note: typically the number of attempts is 1
@@ -148,9 +152,22 @@ struct deep_complete_simulator::pimpl_t {
             assert(iverts.first != iverts.second && iverts.first->first == *iv2mod
                 && "try_get_sample(), the module must have back relation to the vertex");
 #endif // DEBUG
-            advance(iverts.first, (iv2 + used_vertex_index)
-                % distance(iverts.first, iverts.second));
-            vertex = iverts.first->second;  // Get the target vertex
+            auto ivt = iverts.first;
+            advance(ivt, (iv2 + used_vertex_index) % distance(iverts.first, iverts.second));
+            // Do not take the same vertex
+            if(vertex == ivt->second) {
+                if(++ivt == iverts.second)
+                    ivt = iverts.first;
+                if(ivt->second == vertex) {
+#ifdef DEBUG
+                    fprintf(stderr, "v: %lu,  rm1 size: %lu, rm2 size: %lu, distance: %lu\n"
+                        , vertex, rm1.size(), rm2.size(), distance(iverts.first, iverts.second));
+#endif // DEBUG
+                    get_modules( vertex, rm1, rm2 );
+                    continue;
+                }
+            }
+            vertex = ivt->second;  // Get the target vertex
 
             get_modules( vertex, rm1, rm2 );
             // Now get the operation
@@ -183,7 +200,7 @@ struct deep_complete_simulator::pimpl_t {
 
 }; // pimpl_t
 
-std::random_device deep_complete_simulator::pimpl_t::rd;
+random_device deep_complete_simulator::pimpl_t::rd;
 
 // Required for initialization
 deep_complete_simulator::deep_complete_simulator( two_relations_ref vmb, vertices_t& verts )

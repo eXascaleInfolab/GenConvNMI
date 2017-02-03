@@ -15,6 +15,8 @@ using std::vector;
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::ifstream;
+using std::to_string;
 namespace po = boost::program_options;
 using namespace gecmi;
 
@@ -68,11 +70,11 @@ int main( int argc, char* argv[])
     if ( positionals.size() != 2 )
         throw std::invalid_argument("Please provide exactly two input files as input\n");
 
-    std::ifstream in1(positionals[0].c_str() );
+    ifstream in1(positionals[0].c_str() );
     if( !in1 )
         throw std::system_error(errno, std::system_category(), "Could not open the first file\n");
 
-    std::ifstream in2(positionals[1].c_str() );
+    ifstream in2(positionals[1].c_str() );
     if( !in2 )
         throw std::system_error(errno, std::system_category(), "Could not open the second file\n");
 
@@ -110,10 +112,9 @@ int main( int argc, char* argv[])
             // Throw the exception if the synchronization is failed
             b1lnum = bcp1.uniqlSize();
             b2lnum = bcp2.uniqlSize();
-            if(b1lnum != b2lnum) {
-                cerr << "After the synchronization  b1lnum: " << b1lnum << ", b2lnum: " << b2lnum << endl;
-                throw std::domain_error("Input collections have different node base and can't be synchronized gracefully\n");
-            }
+            if(b1lnum != b2lnum)
+                throw std::domain_error("Input collections have different node base and can't be synchronized gracefully: "
+                    + to_string(b1lnum) + " != " + to_string(b2lnum)+ "\n");
         }
     }
 
