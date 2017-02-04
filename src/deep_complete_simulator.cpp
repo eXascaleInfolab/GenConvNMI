@@ -159,23 +159,29 @@ struct deep_complete_simulator::pimpl_t {
             if(ivt->second == vertex) {
                 if(++ivt == iverts.second)
                     ivt = iverts.first;
+                // Check whether it was a single-vertex module
                 if(ivt->second == vertex) {
                     // Single-node module occurred, find it's complement if possible
                     // in the remained modules set
                     v2bms = move(v2first ? rm2 : rm1);
                     const auto&  mtov2 = (v2first ? tworel.second : tworel.first).right;
+                    std::vector<size_t>  v2mods;
                     for(auto v2mod: v2bms) {
                         auto iv2s = mtov2.equal_range(v2mod);
-                        if(distance(iv2s.first, iv2s.second) == 1) {
-                            if(v2first) {
-                                result.first = *iv2mod;
-                                result.second = v2mod;
-                            } else {
-                                result.first = v2mod;
-                                result.second = *iv2mod;
-                            }
-                            return;
+                        if(distance(iv2s.first, iv2s.second) == 1)
+                            v2mods.push_back(v2mod);
+                    }
+                    // Select the result if any exist
+                    if(!v2mods.empty()) {
+                        auto v2mod = v2mods[(iv2 + used_vertex_index) % v2mods.size()];
+                        if(v2first) {
+                            result.first = *iv2mod;
+                            result.second = v2mod;
+                        } else {
+                            result.first = v2mod;
+                            result.second = *iv2mod;
                         }
+                        return;
                     }
                     // The match was not found, take another vertex
                     iv2mod = v2bms.begin();
