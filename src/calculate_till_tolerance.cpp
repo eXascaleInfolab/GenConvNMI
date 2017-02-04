@@ -50,19 +50,31 @@ calculated_info_t calculate_till_tolerance(
 
     vertices_t  vertices;
     vertices.reserve( uniqSize( two_rel.first.left ) );
-    auto& vmap = two_rel.first.left;  // First vmap
-    // Fill the vertices
-    for(const auto& ind = vmap.begin(); ind != vmap.end();) {
-        vertices.push_back(ind->first);
-        const_cast<typename std::remove_reference_t<decltype(vmap)>::iterator&>(ind)
-            = vmap.equal_range(ind->first).second;
-    }
+    {
+        bool  basefirst = true;  // Use first collection as vertices base
 //#ifdef DEBUG
-    const auto  vertDbgSize = uniqSize( two_rel.second.left );
-    if(vertices.size() != vertDbgSize)
-        throw domain_error("calculate_till_tolerance(), The vertices of both clusterings should be the same: "
-            + to_string(vertices.size()) + " != " + to_string(vertDbgSize) + "\n");
+        const auto  verts2Size = uniqSize( two_rel.second.left );
+        if(vertices.capacity() != verts2Size) {
+            fprintf(stderr, "WARNING calculate_till_tolerance(), the number of nodes is different"
+                " in the comparing collections: %lu != %lu\n", vertices.capacity(), verts2Size);
+            //throw domain_error("calculate_till_tolerance(), The vertices of both clusterings should be the same: "
+            //    + to_string(vertices.size()) + " != " + to_string(vertDbgSize) + "\n");
+            //
+            // If the node base is not synced between the collections then use the largest node base
+            if(vertices.capacity() < verts2Size) {
+                vertices.reserve(verts2Size);
+                basefirst = false;
+            }
+        }
 //#endif  // DEBUG
+        auto& vmap = basefirst ? two_rel.first.left : two_rel.second.left;  // First vmap
+        // Fill the vertices
+        for(const auto& ind = vmap.begin(); ind != vmap.end();) {
+            vertices.push_back(ind->first);
+            const_cast<typename std::remove_reference_t<decltype(vmap)>::iterator&>(ind)
+                = vmap.equal_range(ind->first).second;
+        }
+    }
 
     deep_complete_simulator dcs(two_rel, vertices);
 
@@ -77,17 +89,23 @@ calculated_info_t calculate_till_tolerance(
 
     // The expected number of vertices to process (considering multiple walks through the same vertex)
     //size_t  steps = vertices.size() * 0.65 * log2(acr) / -2;  // Note: *0.65 because anyway visrt is selected too large
-    float  avgdeg = fasteval ? 0.65f : 1;  // Average degree, let it be 0.65 for 10K and decreasing on larger nets
+    float  avgdeg = fasteval ? 0.825f : 1;  // Normalized average degree [0, 1], let it be 0.65 for 10K and decreasing on larger nets
     if(fasteval) {
-        const float  degrt = log2(vertices.size()) - log2(8192);
-        if(degrt > 1 / avgdeg)  // ~ >= 13 K
+        const float  degrt = log2(vertices.size()) - log2(65535);
+        if(degrt > 1 / avgdeg)  // ~ >= 70 K
             avgdeg = 1 / degrt;
     }
     size_t  steps = vertices.size() * avgdeg * log2(acr) / -2;  // Note: *0.65 because anyway visrt is selected too large
+//    printf("> calculate_till_tolerance(), steps: %lu, reassigned marg: %G\n"
+//        , steps, vertices.size() * 1.75f * avgdeg);
     if(steps < vertices.size() * 1.75f * avgdeg) {
         //assert(0 && "The number of steps is expected to be at least twice the number of vertices");
         steps = vertices.size() * 2 * avgdeg;
     }
+#ifdef DEBUG
+    printf("> calculate_till_tolerance(), vertices: %lu, steps: %lu (%G%%), navgdeg: %G\n"
+        , vertices.size(), steps, steps * 100.f / vertices.size(), avgdeg);
+#endif  // DEBUG
 
     // Use this to adjust number of threads
     tbb::task_scheduler_init tsi;
@@ -120,8 +138,15 @@ calculated_info_t calculate_till_tolerance(
             nmi
             );
         //std::cout << total_events << " events simulated. Approx. error: " <<  max_var << std::endl;
+#ifdef DEBUG
+        fprintf(stderr, "> calculate_till_tolerance(), iteration completed  max_var: %G, epvar: %G\n"
+            , max_var, epvar);
+#endif  // DEBUG
     }
 
+#ifdef DEBUG
+    fprintf(stderr, "> calculate_till_tolerance(), completed  max_var: %G, nmi: %G\n", max_var, nmi);
+#endif  // DEBUG
     return calculated_info_t{max_var, nmi};
 }// calculate_till_tolerance
 

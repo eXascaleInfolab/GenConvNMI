@@ -47,7 +47,7 @@ int main( int argc, char* argv[])
             po::value<double>()->default_value(0.01),
             "admissible error" )
         ("fast,a", "apply fast approximate evaluations, noticeable on dense"
-            "or large (> 15K nodes) networks" )
+            "or middle-size (> 70K nodes) networks" )
     ;
     po::variables_map vm;
     po::store( po::command_line_parser(argc, argv)

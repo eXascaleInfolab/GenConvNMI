@@ -17,7 +17,7 @@ using std::random_device;
 
 // What's the failure proportion before bailing out... if I get
 // at least this many failures, an excpetion will be raised.
-constexpr size_t MAX_ACCEPTABLE_FAILURES = 31;
+constexpr size_t MAX_ACCEPTABLE_FAILURES = 1024;  // 31;  Acceptable number of the subsequently missed vertices
 
 struct deep_complete_simulator::pimpl_t {
 
@@ -141,8 +141,17 @@ struct deep_complete_simulator::pimpl_t {
 
             // Take modules from clustering 1 or 2 relevant to the origin vertex
             const auto  iv2 = lindis(rd);
-            const bool  v2first = iv2 % 2;
+            bool  v2first = iv2 % 2;
             module_set_t  v2bms = move(v2first ? rm1 : rm2);  // Base modules for v2
+            // ATTENTION: a single selected module set can be empty
+            // if node base is not synced (differs for the left/right collections)
+            if(v2bms.empty()) {
+                v2bms = move(v2first ? rm2 : rm1);
+                v2first = !v2first;
+            }
+#ifdef DEBUG
+            assert(!v2bms.empty() && "try_get_sample(), both selected module sets shouldn't be empty");
+#endif // DEBUG
             // Select module (cluster) from which v2 will be selected
             auto  iv2mod = v2bms.begin();
             advance(iv2mod, iv2 % v2bms.size());
@@ -164,6 +173,10 @@ struct deep_complete_simulator::pimpl_t {
                     // Single-node module occurred, find it's complement if possible
                     // in the remained modules set
                     v2bms = move(v2first ? rm2 : rm1);
+                    // Consider special case
+                    if(v2bms.empty())  // Might occur only in case the node base is not synced
+                        break;
+                    // Process standard case
                     const auto&  mtov2 = (v2first ? tworel.second : tworel.first).right;
                     std::vector<size_t>  v2mods;
                     for(auto v2mod: v2bms) {
@@ -193,6 +206,8 @@ struct deep_complete_simulator::pimpl_t {
 #endif // DEBUG
                     ivt = iverts.first;
                     advance(ivt, (iv2 + used_vertex_index) % distance(iverts.first, iverts.second));
+                    if(ivt->second == vertex && ++ivt == iverts.second)
+                        ivt = iverts.first;
 #ifdef DEBUG
                     assert(ivt->second != vertex && "try_get_sample(), ivt should not contain the origin");
 #endif // DEBUG
