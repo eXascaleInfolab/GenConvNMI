@@ -35,7 +35,6 @@ class bimap_cluster_populator: public input_interface
     vertex_module_bimap_t& vmb;
     // left: Nodes, right: Clusters
 public:
-    typedef vertex_module_bimap_t::relation relation_t;
     bimap_cluster_populator( vertex_module_bimap_t& vmb ):
         vmb(vmb)
     {}

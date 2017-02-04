@@ -16,9 +16,7 @@ using namespace boost::bimaps;
 // What happens if the network is swapped? There is a small chance that
 // some branches have to be discarded.
 typedef bimap< unordered_multiset_of<size_t>, unordered_multiset_of<size_t> >
-    vertex_module_bimap_t;
-
-typedef vertex_module_bimap_t::relation relation_t;
+    vertex_module_bimap_t;  // Note: Vertex-module and Module-vertex bimaps have the same type
 
 typedef std::pair< vertex_module_bimap_t, vertex_module_bimap_t >
     two_relations_t;

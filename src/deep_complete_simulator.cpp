@@ -141,7 +141,7 @@ struct deep_complete_simulator::pimpl_t {
 
             // Take modules from clustering 1 or 2 relevant to the origin vertex
             const auto  iv2 = lindis(rd);
-            bool  v2first = iv2 % 2;
+            const bool  v2first = iv2 % 2;
             module_set_t  v2bms = move(v2first ? rm1 : rm2);  // Base modules for v2
             // Select module (cluster) from which v2 will be selected
             auto  iv2mod = v2bms.begin();
@@ -167,11 +167,12 @@ struct deep_complete_simulator::pimpl_t {
                     for(auto v2mod: v2bms) {
                         auto iv2s = mtov2.equal_range(v2mod);
                         if(distance(iv2s.first, iv2s.second) == 1) {
-                            result.first = v2mod;
-                            result.second = *iv2mod;
                             if(v2first) {
-                                result.first = result.second;
+                                result.first = *iv2mod;
                                 result.second = v2mod;
+                            } else {
+                                result.first = v2mod;
+                                result.second = *iv2mod;
                             }
                             return;
                         }
@@ -179,13 +180,16 @@ struct deep_complete_simulator::pimpl_t {
                     // The match was not found, take another vertex
                     iv2mod = v2bms.begin();
                     advance(iv2mod, iv2 % v2bms.size());
-                    auto iv2s = mtov2.equal_range(*iv2mod);
+                    iverts = mtov2.equal_range(*iv2mod);
 #ifdef DEBUG
-                    assert(iv2s.first != iv2s.second && iv2s.first->first == *iv2mod
+                    assert(iverts.first != iverts.second && iverts.first->first == *iv2mod
                         && "try_get_sample() 2, the module must have back relation to the vertex");
 #endif // DEBUG
-                    ivt = iv2s.first;
-                    advance(ivt, (iv2 + used_vertex_index) % distance(iv2s.first, iv2s.second));
+                    ivt = iverts.first;
+                    advance(ivt, (iv2 + used_vertex_index) % distance(iverts.first, iverts.second));
+#ifdef DEBUG
+                    assert(ivt->second != vertex && "try_get_sample(), ivt should not contain the origin");
+#endif // DEBUG
                 }
             }
             vertex = ivt->second;  // Get the target vertex
