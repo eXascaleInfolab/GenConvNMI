@@ -49,7 +49,13 @@ public:
         // Note: boost bimap of multiset does not have reserve()
         //vmb.left.reserve(vertices_num);
         if(vertices_num)
-            vmb.left.rehash(vertices_num / vmb.left.max_load_factor() + 1);
+            try {
+                vmb.left.rehash(vertices_num / vmb.left.max_load_factor() + 1);
+            } catch(std::bad_alloc& e) {
+                fprintf(stderr, "ERROR reserve_vertices_modules(), failed to rehash for %lu vertices: %s\n"
+                    , vertices_num, e.what());
+                throw;
+            }
 //        fprintf(stderr, "# Reserving. Nodes rehashed. Required %lu clusters, %lu nodes (%G buckets)"
 //            ";  preallocated %G clusters (lf: %G), %G nodes (lf: %G)\n"
 //            , modules_num, vertices_num, vertices_num / vmb.left.max_load_factor() + 1

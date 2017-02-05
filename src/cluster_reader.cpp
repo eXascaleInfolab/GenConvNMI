@@ -62,29 +62,44 @@ void parseHeader(istream& fsm, string& line, size_t& clsnum, size_t& ndsnum) {
 			if(field == ndsmark)
 				fields >> ndsnum;
 		}
+		// Validate parsed values
+		if(clsnum > ndsnum) {
+			fprintf(stderr, "WARNING parseHeader(), clsnum (%lu) typically should be"
+				" less than ndsnum (%lu)\n", clsnum, ndsnum);
+			//assert(0 && "parseHeader(), clsnum typically should be less than ndsnum");
+		}
 		// Get following line for the unified subsequent processing
 		getline(fsm, line);
 		break;
 	}
 }
 
+//! \brief Estimate zeroized values
+//!
+//! \param cmsbytes size_t  - the number of bytes in the file
+//! \param ndsnum size_t&  - the estimate number of nodes if 0, otherwise omit it
+//! \param clsnum size_t&  - the estimate number of clusters if 0, otherwise omit it
+//! \return void
 void estimateSizes(size_t cmsbytes, size_t& ndsnum, size_t& clsnum)
 {
 	if(!cmsbytes)
 		return;
 
-	size_t  magn = 10;  // Decimal ids magnitude
-	unsigned  img = 1;  // Index of the magnitude (10^1)
-	size_t  reminder = cmsbytes % magn;  // Reminder in bytes
-	ndsnum = reminder / ++img;  //  img digits + 1 delimiter for each element
-	while(cmsbytes >= magn) {
-		magn *= 10;
-		ndsnum += (cmsbytes - reminder) % magn / ++img;
-		reminder = cmsbytes % magn;
+	if(!ndsnum) {
+		size_t  magn = 10;  // Decimal ids magnitude
+		unsigned  img = 1;  // Index of the magnitude (10^1)
+		size_t  reminder = cmsbytes % magn;  // Reminder in bytes
+		ndsnum = reminder / ++img;  //  img digits + 1 delimiter for each element
+		while(cmsbytes >= magn) {
+			magn *= 10;
+			ndsnum += (cmsbytes - reminder) % magn / ++img;
+			reminder = cmsbytes % magn;
+		}
 	}
 
 	// Usually the number of clusters does not increase square root of the number of nodes
-	clsnum = sqrt(ndsnum) + 1;  // Note: +1 to consider rounding down
+	if(!clsnum)
+		clsnum = sqrt(ndsnum) + 1;  // Note: +1 to consider rounding down
 }
 
 // size_t read_clusters_without_remappings( istream& input, input_interface& ) {{{
@@ -96,6 +111,9 @@ size_t read_clusters_without_remappings( istream& input,
 	size_t  clsnum = 0;  // The number of clusters
 	size_t  ndsnum = 0;  // The number of nodes
 	parseHeader(input, line, clsnum, ndsnum);
+	// Validate and correct the number of clusters if required
+	if(ndsnum && clsnum > ndsnum)
+		clsnum = ndsnum;
 
 	bool  estimated = false;  // Whether the number of nodes/clusters is estimated
 	if(!ndsnum) {
@@ -117,12 +135,20 @@ size_t read_clusters_without_remappings( istream& input,
 		if(cmsbytes && cmsbytes != size_t(-1)) {  // File length fetching failed
 			estimateSizes(cmsbytes, ndsnum, clsnum);
 			estimated = true;
+//#ifdef DEBUG
+//			fprintf(stderr, "# read_clusters_without_remappings(), %lu bytes"
+//				" => estimated %lu nodes, %lu clusters\n", cmsbytes, ndsnum, clsnum);
+//#endif // DEBUG
 		}
 	}
 
 	//fprintf(stderr, "# %lu clusters, %lu nodes\n", clsnum, ndsnum);
 	if(clsnum || ndsnum) {
 		const size_t  rsvsize = ndsnum + clsnum;  // Note: bimap has the same size of both sides
+#ifdef DEBUG
+		fprintf(stderr, "# read_clusters_without_remappings(), preallocating"
+			" %lu (%lu, %lu) elements, estimated: %u\n", rsvsize, ndsnum, clsnum, estimated);
+#endif // DEBUG
         inp_interf.reserve_vertices_modules(rsvsize, rsvsize);
 	}
 
