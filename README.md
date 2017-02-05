@@ -1,10 +1,11 @@
 # GenConvNMI
-Generalized Conventional Mutual Information (GenConvMI) - NMI for Overlapping clusters compatible with standard [NMI](http://www.cs.plu.edu/courses/csce436/art%202.pdf) value, pure C++ version producing a single executable.
+Generalized Conventional Mutual Information (GenConvMI) - NMI for Overlapping clusters compatible with standard [NMI](http://www.cs.plu.edu/courses/csce436/art%202.pdf) value, pure C++ version producing a single executable.  
+GenConvMI applicable to evaluate both *overlapping (crisp and fuzzy) and multi-resolution clustering*: a single collection can contain all these mixed clusters (communities, modules) and be correctly evaluated, which is a unique feature.
 
 The paper: [Comparing network covers using mutual information](https://arxiv.org/abs/1202.0425) by Alcides Viamontes Esquivel, Martin Rosval, 2012.  
 (c) Alcides Viamontes Esquivel
 
-This is significantly reimplemented version of the original [gecmi](https://bitbucket.org/dsign/gecmi) with additional features, much better performance (~2 ORDERS faster, consumes 2x less memory and is more accurate on large networks than the original version), fully automated build and without the redundant dependencies (the Pyhton wrapper is removed). This version evaluates both NMI and FNMI (optionally) considering overlaps.  
+This implementation is part of the [PyCABeM](https://github.com/eXascaleInfolab/PyCABeM) benchmark. *GenConvNMI* is significantly reimplemented version of the original [gecmi](https://bitbucket.org/dsign/gecmi) with additional features, much better performance (~2 ORDERS faster, consumes 2x less memory and is more accurate on large networks than the original version), fully automated build and without the redundant dependencies (the Pyhton wrapper is removed). This version evaluates both NMI and FNMI (optionally) considering overlaps.  
 FNMI is so called *Fair NMI*, see the paper [Is Normalized Mutual Information a Fair Measure for Comparing Community Detection Methods](http://ieeexplore.ieee.org/document/7403755/) by Alessia Amelio and Clara Pizzuti, ASONAM'15. However, FNMI is less meaningful and less fair than the standard NMI, because FNMI measure is affected by the number of clusters much more than by their actual structure that should be evaluated.  
 Implemented by Artem Lutov <artem@exascale.info>
 

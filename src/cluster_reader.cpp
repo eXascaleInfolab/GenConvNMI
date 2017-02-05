@@ -19,7 +19,6 @@ using std::istream;
 using std::istringstream;
 
 
-template <typename NodeId>
 void parseHeader(istream& fsm, string& line, size_t& clsnum, size_t& ndsnum) {
 	// Process the header, which is a special initial comment
 	// The target header is:  # Clusters: <cls_num>[,] Nodes: <cls_num>
@@ -88,16 +87,17 @@ void estimateSizes(size_t cmsbytes, size_t& ndsnum, size_t& clsnum)
 	clsnum = sqrt(ndsnum) + 1;  // Note: +1 to consider rounding down
 }
 
-// void read_clusters_without_remappings( istream& input, input_interface& ) {{{
-void read_clusters_without_remappings( istream& input,
-    input_interface& inp_interf, const char* fname )
+// size_t read_clusters_without_remappings( istream& input, input_interface& ) {{{
+size_t read_clusters_without_remappings( istream& input,
+    input_interface& inp_interf, const char* fname)
 {
     // Note: CNL [CSN] format only is supported
 	string  line;
 	size_t  clsnum = 0;  // The number of clusters
 	size_t  ndsnum = 0;  // The number of nodes
-	parseHeader<size_t>(input, line, clsnum, ndsnum);
+	parseHeader(input, line, clsnum, ndsnum);
 
+	bool  estimated = false;  // Whether the number of nodes/clusters is estimated
 	if(!ndsnum) {
 		size_t  cmsbytes = 0;
 #ifdef __unix__
@@ -114,8 +114,10 @@ void read_clusters_without_remappings( istream& input,
 			cmsbytes = input.tellg();  // The number of bytes in the input communities
 			input.seekg(0, input.beg);
 		}
-		if(cmsbytes && cmsbytes != size_t(-1))  // File length fetching failed
+		if(cmsbytes && cmsbytes != size_t(-1)) {  // File length fetching failed
 			estimateSizes(cmsbytes, ndsnum, clsnum);
+			estimated = true;
+		}
 	}
 
 	//fprintf(stderr, "# %lu clusters, %lu nodes\n", clsnum, ndsnum);
@@ -125,6 +127,7 @@ void read_clusters_without_remappings( istream& input,
 	}
 
     size_t iline = 0;  // Payload line index (internal id of the cluster)
+    size_t members = 0;  // Evaluate the actual number of members (nodes including repetitions)
     do {
         char *tok = strtok(const_cast<char*>(line.data()), " \t");
 
@@ -146,12 +149,29 @@ void read_clusters_without_remappings( istream& input,
             // Note: this algorithm does not support fuzzy overlaps (nodes with defined shares),
             // the share part is skipped if exists
             inp_interf.add_vertex_module(stoul(tok), iline);
+            // Note: the number of nodes can't be evaluated here simply incrementing the value,
+            // because clusters might have overlaps, i.e. the nodes might have multiple membership
+            ++members;
         } while((tok = strtok(nullptr, " \t")));
     } while(getline(input, line));
 
 	// Rehash the nodes decreasing the allocated space and number of buckets
 	// for the faster iterating if required
 	inp_interf.shrink_to_fit_modules();
+
+    const size_t  ansnum = inp_interf.uniqlSize();;  // Evaluate the actual number of nodes, resulting value
+#ifdef DEBUG
+	fprintf(stderr, "# read_clusters_without_remappings(), expected & actual"
+		" nodes: (%lu, %lu), clusters: (%lu, %lu); nodes membership: %G\n"
+		, ndsnum, ansnum, clsnum, iline, float(members) / ansnum);
+#endif // DEBUG
+	if(!estimated && ((clsnum && clsnum != iline) || (ndsnum && ndsnum != ansnum)))
+		fprintf(stderr, "WARNING read_clusters_without_remappings(),"
+			" The specified number of nodes/clusters does not correspond to the actual one"
+			"  nodes: (%lu, %lu), clusters: (%lu, %lu)\n"
+			, ndsnum, ansnum, clsnum, iline);
+
+	return ansnum;
 } // Reader function }}}
 
 }  // gecmi

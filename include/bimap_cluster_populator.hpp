@@ -100,11 +100,11 @@ public:
         // Remove all the nodes with their relations that are absent in the base collection
         for(const auto& ind = vmb.left.begin(); ind != vmb.left.end();) {
             // Remove the absent node with all relations
-            if(bcpbase.vmb.left.find(ind->first) == bcpbase.vmb.left.end())
+            if(bcpbase.vmb.left.find(ind->first) == bcpbase.vmb.left.end()) {
                 //auto indn = vmb.left.erase(ind, vmb.left.upper_bound(ind->first));
                 const_cast<typename decltype(vmb.left)::iterator&>(ind)
                     = vmb.left.erase(ind, vmb.left.equal_range(ind->first).second);
-            else ++const_cast<typename decltype(vmb.left)::iterator&>(ind);
+            } else ++const_cast<typename decltype(vmb.left)::iterator&>(ind);
         }
     }
 }; // bimap_cluster_populator

@@ -1,5 +1,4 @@
 #include <fstream>
-#include <iostream>
 #include <stdexcept>
 #include <system_error>
 
@@ -13,8 +12,6 @@
 using std::string;
 using std::vector;
 using std::cout;
-using std::cerr;
-using std::endl;
 using std::ifstream;
 using std::to_string;
 namespace po = boost::program_options;
@@ -46,8 +43,8 @@ int main( int argc, char* argv[])
         ("error,e",
             po::value<double>()->default_value(0.01),
             "admissible error" )
-        ("fast,a", "apply fast approximate evaluations, noticeable on dense"
-            "or middle-size (> 70K nodes) networks" )
+        ("fast,a", "apply fast approximate evaluations that are less accurate"
+            ", but much faster on large networks" )
     ;
     po::variables_map vm;
     po::store( po::command_line_parser(argc, argv)
@@ -57,14 +54,14 @@ int main( int argc, char* argv[])
     po::notify(vm);
     if ( vm.count("help" ) )
     {
-        cout << desc << endl;
+        cout << desc << std::endl;
         return 1;
     }
     vector< string > positionals;
     try {
         positionals = vm["input"].as<vector<string> >();
     } catch ( boost::bad_any_cast const& ) {
-        cerr << "Please, provide two input files to proceed. Use `gecmi -h` for more info" << endl;
+        fprintf(stderr, "Please, provide two input files to proceed. Use `gecmi -h` for more info\n");
         throw;
     }
     if ( positionals.size() != 2 )
@@ -84,34 +81,40 @@ int main( int argc, char* argv[])
     bimap_cluster_populator  bcp1( two_rel.first );
     bimap_cluster_populator  bcp2( two_rel.second );
     // bimap_cluster_populator:  left: Nodes, right: Clusters
+    size_t  b1lnum=0, b2lnum=0;  // The number of nodes in the collections
 
-    read_clusters_without_remappings(
+    b1lnum = read_clusters_without_remappings(
         in1,
         bcp1,
         positionals[0].c_str()
     );
 
-    read_clusters_without_remappings(
+    b2lnum = read_clusters_without_remappings(
         in2,
         bcp2,
         positionals[1].c_str()
     );
 
-    // Synchronize the number of nodes in both collections if required
-    if (vm.count("sync")) {
-        auto  b1lnum = bcp1.uniqlSize();
-        auto  b2lnum = bcp2.uniqlSize();
-        if(b1lnum != b2lnum) {
-            cerr << "WARNING, the number of nodes is different in the collections: "
-                << b1lnum << " vs " << b2lnum << ". The nodes"
-                " will be synchronized by removing non-matching ones from the largest collection\n";
-            if(b1lnum < b2lnum)  // bcp1 is the base for the sync, the nodes are removed from bcp2
+#ifdef DEBUG
+        assert(b1lnum == bcp1.uniqlSize() && b2lnum == bcp2.uniqlSize()
+            && "");
+#endif // DEBUG
+    if(b1lnum != b2lnum) {
+        const bool  sync = vm.count("sync");
+        fprintf(stderr, "WARNING, evaluating collections have different number of nodes: %lu != %lu"
+            ", sync enabled: %u\n", b1lnum, b2lnum, sync);
+
+        // Synchronize the number of nodes in both collections if required
+        if (sync) {
+            if(b1lnum < b2lnum) {  // bcp1 is the base for the sync, the nodes are removed from bcp2
                 bcp2.sync(bcp1);
-            else bcp1.sync(bcp2);  // bcp2 is the base for the sync, the nodes are removed from bcp1
+                b2lnum = bcp2.uniqlSize();
+            } else {
+                bcp1.sync(bcp2);  // bcp2 is the base for the sync, the nodes are removed from bcp1
+                b1lnum = bcp1.uniqlSize();
+            }
 
             // Throw the exception if the synchronization is failed
-            b1lnum = bcp1.uniqlSize();
-            b2lnum = bcp2.uniqlSize();
             if(b1lnum != b2lnum)
                 throw std::domain_error("Input collections have different node base and can't be synchronized gracefully: "
                     + to_string(b1lnum) + " != " + to_string(b2lnum)+ "\n");
@@ -121,16 +124,16 @@ int main( int argc, char* argv[])
     double risk = vm["risk" ].as< double>();
     double epvar  = vm["error"].as<double>();
 
-    calculated_info_t cit = calculate_till_tolerance( two_rel, risk, epvar, vm.count("fast") );
+    calculated_info_t cit = calculate_till_tolerance( two_rel, risk, epvar
+        , vm.count("fast"), b1lnum, b2lnum );
 
     if (vm.count("fnmi")) {
-        cout << "NMI: " << cit.nmi;
         const auto b1rnum = bcp1.uniqrSize();
         const auto b2rnum = bcp2.uniqrSize();
-
-        cout << ", FNMI: " << cit.nmi * exp(-double(abs(b1rnum - b2rnum))
-            / std::max(b1rnum, b2rnum)) << " (cls1: " << b1rnum << ", cls2: " << b2rnum << ")\n";
-    } else cout << cit.nmi << endl;
+        printf("NMI: %G, FNMI: %G (cls1: %lu, cls2: %lu)\n", cit.nmi
+            , cit.nmi * exp(-double(abs(b1rnum - b2rnum)) / std::max(b1rnum, b2rnum))
+            , b1rnum, b2rnum);
+    } else printf("%G\n", cit.nmi);
 
     return 0;
 }

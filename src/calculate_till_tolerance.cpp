@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include <tbb/task_scheduler_init.h> // <-- For controlling number of working threads
 #include <tbb/parallel_for.h>
 
@@ -28,7 +26,8 @@ calculated_info_t calculate_till_tolerance(
     double risk , // <-- Upper bound of probability of the true value being
                   //  -- farthest from estimated value than the epvar
     double epvar,
-    bool fasteval  // Use approximate fast evaluation
+    bool fasteval,  // Use more approximate, but faster evaluation
+    size_t nds1num, size_t nds2num  // The number of nodes in the collections (if specified, otherwise 0)
     )
 {
     assert(risk > 0 && risk < 1 && epvar > 0 && epvar < 1 && "risk and epvar should E (0, 1)");
@@ -47,13 +46,12 @@ calculated_info_t calculate_till_tolerance(
     importance_float_t nmi;
     importance_float_t max_var = 1.0e10;
 
-
     vertices_t  vertices;
-    vertices.reserve( uniqSize( two_rel.first.left ) );
+    vertices.reserve( nds1num ? nds1num : uniqSize( two_rel.first.left ) );
     {
         bool  basefirst = true;  // Use first collection as vertices base
 //#ifdef DEBUG
-        const auto  verts2Size = uniqSize( two_rel.second.left );
+        const auto  verts2Size = nds2num ? nds2num : uniqSize( two_rel.second.left );
         if(vertices.capacity() != verts2Size) {
             fprintf(stderr, "WARNING calculate_till_tolerance(), the number of nodes is different"
                 " in the comparing collections: %lu != %lu\n", vertices.capacity(), verts2Size);
@@ -96,14 +94,14 @@ calculated_info_t calculate_till_tolerance(
             avgdeg = 1 / degrt;
     }
     size_t  steps = vertices.size() * avgdeg * log2(acr) / -2;  // Note: *0.65 because anyway visrt is selected too large
-//    printf("> calculate_till_tolerance(), steps: %lu, reassigned marg: %G\n"
+//    printf("# calculate_till_tolerance(), steps: %lu, reassigned marg: %G\n"
 //        , steps, vertices.size() * 1.75f * avgdeg);
     if(steps < vertices.size() * 1.75f * avgdeg) {
         //assert(0 && "The number of steps is expected to be at least twice the number of vertices");
         steps = vertices.size() * 2 * avgdeg;
     }
 #ifdef DEBUG
-    printf("> calculate_till_tolerance(), vertices: %lu, steps: %lu (%G%%), navgdeg: %G\n"
+    printf("# calculate_till_tolerance(), vertices: %lu, steps: %lu (%G%%), navgdeg: %G\n"
         , vertices.size(), steps, steps * 100.f / vertices.size(), avgdeg);
 #endif  // DEBUG
 
@@ -137,15 +135,14 @@ calculated_info_t calculate_till_tolerance(
             max_var,
             nmi
             );
-        //std::cout << total_events << " events simulated. Approx. error: " <<  max_var << std::endl;
 #ifdef DEBUG
-        fprintf(stderr, "> calculate_till_tolerance(), iteration completed  max_var: %G, epvar: %G\n"
-            , max_var, epvar);
+        fprintf(stderr, "# calculate_till_tolerance(), iteration completed  with %lu events"
+            " and max_var: %G (epvar: %G)\n", total_events, max_var, epvar);
 #endif  // DEBUG
     }
 
 #ifdef DEBUG
-    fprintf(stderr, "> calculate_till_tolerance(), completed  max_var: %G, nmi: %G\n", max_var, nmi);
+    fprintf(stderr, "# calculate_till_tolerance(), completed  max_var: %G, nmi: %G\n", max_var, nmi);
 #endif  // DEBUG
     return calculated_info_t{max_var, nmi};
 }// calculate_till_tolerance
