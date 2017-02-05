@@ -66,6 +66,8 @@ Execution Options:
 -f [ --fnmi ]              evaluate also FNMI
 -r [ --risk ] arg (=0.01)  probability of value being outside
 -e [ --error ] arg (=0.01) admissible error
+-a [ --fast ]              apply fast approximate evaluations that are less 
+                           accurate, but much faster on large networks
 ```
 If you want to tweak the precision, use the options `-e` and `-r`, to set the error and
 the risk respectively. See the [paper](http://arxiv.org/abs/1202.0425) for the meaning of these concepts.  
