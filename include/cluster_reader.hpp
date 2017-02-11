@@ -21,7 +21,8 @@ public:
 // The name of this method reflects the fact that remappings
 // are not made in the numbers of vertices and modules
 size_t read_clusters_without_remappings(std::istream& input,
-    input_interface& inp_interf, const char* fname=nullptr);
+    input_interface& inp_interf, const char* fname=nullptr,
+    float membership=1.f);  // Average expected membership
 }  // gecmi
 
 #endif  // CLUSTER_READER__CLUSTER_READER_HPP_

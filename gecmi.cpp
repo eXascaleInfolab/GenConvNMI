@@ -14,6 +14,7 @@ using std::vector;
 using std::cout;
 using std::ifstream;
 using std::to_string;
+using std::invalid_argument;
 namespace po = boost::program_options;
 using namespace gecmi;
 
@@ -45,6 +46,9 @@ int main( int argc, char* argv[])
             "admissible error" )
         ("fast,a", "apply fast approximate evaluations that are less accurate"
             ", but much faster on large networks" )
+        ("membership,m",
+            po::value<float>()->default_value(1.f),
+            "average expected membership of nodes in the clusters, > 0, typically >= 1")
     ;
     po::variables_map vm;
     po::store( po::command_line_parser(argc, argv)
@@ -65,7 +69,7 @@ int main( int argc, char* argv[])
         throw;
     }
     if ( positionals.size() != 2 )
-        throw std::invalid_argument("Please provide exactly two input files as input\n");
+        throw invalid_argument("Please provide exactly two input files as input\n");
 
     ifstream in1(positionals[0].c_str() );
     if( !in1 )
@@ -82,17 +86,24 @@ int main( int argc, char* argv[])
     bimap_cluster_populator  bcp2( two_rel.second );
     // bimap_cluster_populator:  left: Nodes, right: Clusters
     size_t  b1lnum=0, b2lnum=0;  // The number of nodes in the collections
+    const float membership = vm["membership"].as<float>();
+
+    if(membership <= 0)
+        throw invalid_argument("membership = " + to_string(membership)
+			+ " should be positive");
 
     b1lnum = read_clusters_without_remappings(
         in1,
         bcp1,
-        positionals[0].c_str()
+        positionals[0].c_str(),
+        membership
     );
 
     b2lnum = read_clusters_without_remappings(
         in2,
         bcp2,
-        positionals[1].c_str()
+        positionals[1].c_str(),
+        membership
     );
 
 #ifdef DEBUG
@@ -121,8 +132,8 @@ int main( int argc, char* argv[])
         }
     }
 
-    double risk = vm["risk" ].as< double>();
-    double epvar  = vm["error"].as<double>();
+    const double risk = vm["risk" ].as< double>();
+    const double epvar  = vm["error"].as<double>();
 
     calculated_info_t cit = calculate_till_tolerance( two_rel, risk, epvar
         , vm.count("fast"), b1lnum, b2lnum );

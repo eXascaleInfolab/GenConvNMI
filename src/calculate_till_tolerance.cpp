@@ -89,8 +89,8 @@ calculated_info_t calculate_till_tolerance(
     //size_t  steps = vertices.size() * 0.65 * log2(acr) / -2;  // Note: *0.65 because anyway visrt is selected too large
     float  avgdeg = fasteval ? 0.825f : 1;  // Normalized average degree [0, 1], let it be 0.65 for 10K and decreasing on larger nets
     if(fasteval) {
-        const float  degrt = log2(vertices.size()) - log2(65535);
-        if(degrt > 1 / avgdeg)  // ~ >= 70 K
+        const float  degrt = log2(vertices.size()) - log2(32768);  // 2^15 = 32768
+        if(degrt > 1 / avgdeg)  // ~ >= 60 K
             avgdeg = 1 / degrt;
     }
     size_t  steps = vertices.size() * avgdeg * log2(acr) / -2;  // Note: *0.65 because anyway visrt is selected too large

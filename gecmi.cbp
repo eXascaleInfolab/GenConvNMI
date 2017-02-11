@@ -75,6 +75,7 @@
 		<Unit filename="include/bimap_cluster_populator.hpp" />
 		<Unit filename="include/calculate_till_tolerance.hpp" />
 		<Unit filename="include/cluster_reader.hpp" />
+		<Unit filename="include/cnl_header_reader.hpp" />
 		<Unit filename="include/confusion.hpp" />
 		<Unit filename="include/deep_complete_simulator.hpp" />
 		<Unit filename="include/parallel_worker.hpp" />
