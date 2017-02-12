@@ -60,10 +60,8 @@ calculated_info_t calculate_till_tolerance(
             //
             // If the node base is not synced between the collections then use the smallest node base,
             // because the missed vertices contribute nothing to NMI
-            if(vertices.capacity() > verts2Size) {
-                vertices.reserve(verts2Size);
+            if(vertices.capacity() > verts2Size)
                 basefirst = false;
-            }
         }
 //#endif  // DEBUG
         auto& vmap = basefirst ? two_rel.first.left : two_rel.second.left;  // First vmap
@@ -73,6 +71,7 @@ calculated_info_t calculate_till_tolerance(
             const_cast<typename std::remove_reference_t<decltype(vmap)>::iterator&>(ind)
                 = vmap.equal_range(ind->first).second;
         }
+        vertices.shrink_to_fit();  // Free unused memory
     }
 
     deep_complete_simulator dcs(two_rel, vertices);
@@ -91,7 +90,8 @@ calculated_info_t calculate_till_tolerance(
     float  avgdeg = fasteval ? 0.825f : 1;  // Normalized average degree [0, 1], let it be 0.65 for 10K and decreasing on larger nets
     // Note: vertices relations (>= vertices) are counted for the steps, which is important
     // in case the collection is a flattened hierarchy with multiple memberships for the nodes ~= number of levels
-    const size_t  steps_base = std::min(two_rel.first.left.size(), two_rel.second.left.size());
+    const size_t  steps_base = fasteval ? vertices.size() * 1.5f
+        : std::min(two_rel.first.left.size(), two_rel.second.left.size());
     if(fasteval) {
         const float  degrt = log2(steps_base) - log2(32768);  // 2^15 = 32768
         if(degrt > 1 / avgdeg)  // ~ >= 60 K
