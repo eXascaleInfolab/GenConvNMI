@@ -64,7 +64,7 @@ size_t read_clusters_without_remappings( istream& input,
             // because clusters might have overlaps, i.e. the nodes might have multiple membership
             ++members;
         } while((tok = strtok(nullptr, " \t")));
-    } while(getline(input, line));
+    } while(getline(input, line));  // Note: the line does not contain '\n' in the end, EOL is trimmed
 
 	// Rehash the nodes decreasing the allocated space and number of buckets
 	// for the faster iterating if required

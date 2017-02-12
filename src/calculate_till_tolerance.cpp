@@ -58,8 +58,9 @@ calculated_info_t calculate_till_tolerance(
             //throw domain_error("calculate_till_tolerance(), The vertices of both clusterings should be the same: "
             //    + to_string(vertices.size()) + " != " + to_string(vertDbgSize) + "\n");
             //
-            // If the node base is not synced between the collections then use the largest node base
-            if(vertices.capacity() < verts2Size) {
+            // If the node base is not synced between the collections then use the smallest node base,
+            // because the missed vertices contribute nothing to NMI
+            if(vertices.capacity() > verts2Size) {
                 vertices.reserve(verts2Size);
                 basefirst = false;
             }
@@ -88,17 +89,20 @@ calculated_info_t calculate_till_tolerance(
     // The expected number of vertices to process (considering multiple walks through the same vertex)
     //size_t  steps = vertices.size() * 0.65 * log2(acr) / -2;  // Note: *0.65 because anyway visrt is selected too large
     float  avgdeg = fasteval ? 0.825f : 1;  // Normalized average degree [0, 1], let it be 0.65 for 10K and decreasing on larger nets
+    // Note: vertices relations (>= vertices) are counted for the steps, which is important
+    // in case the collection is a flattened hierarchy with multiple memberships for the nodes ~= number of levels
+    const size_t  steps_base = std::min(two_rel.first.left.size(), two_rel.second.left.size());
     if(fasteval) {
-        const float  degrt = log2(vertices.size()) - log2(32768);  // 2^15 = 32768
+        const float  degrt = log2(steps_base) - log2(32768);  // 2^15 = 32768
         if(degrt > 1 / avgdeg)  // ~ >= 60 K
             avgdeg = 1 / degrt;
     }
-    size_t  steps = vertices.size() * avgdeg * log2(acr) / -2;  // Note: *0.65 because anyway visrt is selected too large
+    size_t  steps = steps_base * avgdeg * log2(acr) / -2;  // Note: *0.65 because anyway visrt is selected too large
 //    printf("# calculate_till_tolerance(), steps: %lu, reassigned marg: %G\n"
-//        , steps, vertices.size() * 1.75f * avgdeg);
-    if(steps < vertices.size() * 1.75f * avgdeg) {
+//        , steps, steps_base * 1.75f * avgdeg);
+    if(steps < steps_base * 1.25f * avgdeg) {
         //assert(0 && "The number of steps is expected to be at least twice the number of vertices");
-        steps = vertices.size() * 2 * avgdeg;
+        steps = steps_base * 1.25f * avgdeg;
     }
 #ifdef DEBUG
     printf("# calculate_till_tolerance(), vertices: %lu, steps: %lu (%G%%), navgdeg: %G\n"
