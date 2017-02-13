@@ -102,7 +102,7 @@ struct deep_complete_simulator::pimpl_t {
     {
         result.importance = 1.0;  // Probability E [0, 1]
         // Get the sets of modules (from 2 clusterings/partitions) for the first vertex
-        size_t vertex = verts[lindis(rd)];  // 0
+        size_t vertex = verts[lindis(rndgen)];  // 0, rndgen, rd
 
         module_set_t rm1, rm2;
         get_modules( vertex, rm1, rm2 );
@@ -136,7 +136,7 @@ struct deep_complete_simulator::pimpl_t {
             //vertex = verts[ iv2 ];
 
             // Take modules from clustering 1 or 2 relevant to the origin vertex
-            const auto  iv2 = lindis(rd);
+            const auto  iv2 = lindis(rndgen);  // rndgen, rd
             bool  v2first = iv2 % 2;
             module_set_t  v2bms = move(v2first ? rm1 : rm2);  // Base modules for v2
             // ATTENTION: a single selected module set can be empty

@@ -118,8 +118,10 @@ calculated_info_t calculate_till_tolerance(
     if(sratio > 1)
         sratio = 2 - 1 / sratio;
     const size_t  steps1 = sratio / 2 * steps;
+#ifdef DEBUG
     fprintf(stderr, "# rows/cols: %G,  steps1: %lu, steps2: %lu,  sr: %G\n", double(rows) / cols
-        , steps1, steps - steps1, steps1 / double(steps - steps1));
+        , steps - steps1, steps1, steps1 / double(steps - steps1));
+#endif  // DEBUG
     while( epvar < max_var )
     {
         // For the number of steps randomly selected vertices fill the matrix of modules (clusters) correspondence
