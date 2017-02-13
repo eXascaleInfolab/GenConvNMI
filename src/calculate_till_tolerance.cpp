@@ -113,21 +113,23 @@ calculated_info_t calculate_till_tolerance(
     // Use this to adjust number of threads
     tbb::task_scheduler_init tsi;
 
+    // Evaluate once from each side
+    steps /= 2;
     while( epvar < max_var )
     {
         // For the number of steps randomly selected vertices fill the matrix of modules (clusters) correspondence
         tbb::spin_mutex wait_for_matrix;
         try {
-            // Evaluate once from each side
-            steps /= 2;
+            size_t csteps = steps * (float(cols) / rows);
             parallel_for(
-                tbb::blocked_range< size_t >( 0, steps, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
+                tbb::blocked_range< size_t >( 0, csteps, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
                 direct_worker< counter_matrix_t* >( dcs, &cm, &wait_for_matrix )
             );
             swap(two_rel.first, two_rel.second);
             cm = transpose(cm);
+            csteps = steps * (float(rows) / cols);
             parallel_for(
-                tbb::blocked_range< size_t >( 0, steps, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
+                tbb::blocked_range< size_t >( 0, csteps, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
                 direct_worker< counter_matrix_t* >( dcs, &cm, &wait_for_matrix )
             );
         } catch (tbb::tbb_exception const& e) {
