@@ -26,6 +26,7 @@ struct deep_complete_simulator::pimpl_t {
     //   I need a random number generator that picks up a random vertex
     //   in the set of remaining vertices.
     //
+    constexpr static size_t  RESULT_NONE = -1;
     static random_device rd;
     typedef std::mt19937 randgen_t;
     typedef std::mt19937::result_type  gen_seed_t;
@@ -73,7 +74,6 @@ struct deep_complete_simulator::pimpl_t {
 
     simulation_result_t get_sample()
     {
-        constexpr static size_t  RESULT_NONE = -1;
         simulation_result_t result(RESULT_NONE);
         uint32_t attempt_count = 0;
         while ( result.first == RESULT_NONE )
@@ -101,10 +101,6 @@ struct deep_complete_simulator::pimpl_t {
     void try_get_sample(simulation_result_t& result )  // The most heavy function !!!
     {
         result.importance = 1.0;  // Probability E [0, 1]
-        // On the beginning, I need a random shuffle of the vertices, whatever
-        // many they be.
-        //std::shuffle( verts.begin(), verts.end(), rndgen );  // lindis(rd) wrapper
-
         // Get the sets of modules (from 2 clusterings/partitions) for the first vertex
         size_t vertex = verts[lindis(rd)];  // 0
 
@@ -233,7 +229,7 @@ struct deep_complete_simulator::pimpl_t {
         {
             result.first = pa1.get_a_module();
             result.second = pa2.get_a_module();
-        } else result.first = result.second = -1;
+        } else result.first = result.second = RESULT_NONE;
     }
 
 }; // pimpl_t

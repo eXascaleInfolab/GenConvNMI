@@ -22,7 +22,8 @@ namespace gecmi {
     void normalize_events( counter_matrix_t const& cm,
         importance_matrix_t& out_norm_conf,
         importance_vector_t& out_norm_cols,
-        importance_vector_t& out_norm_rows
+        importance_vector_t& out_norm_rows,
+        importance_float_t total_events=0
         );
 
     void normalize_events_with_fails( counter_matrix_t const& cm,
@@ -42,7 +43,7 @@ namespace gecmi {
         importance_vector_t const& out_norm_rows
     );
 
-    size_t total_events_from_unmi_cm(
+    importance_float_t total_events_from_unmi_cm(
         counter_matrix_t const& cm
     );
 
@@ -50,12 +51,13 @@ namespace gecmi {
         importance_matrix_t const& norm_conf,
         importance_vector_t const& norm_cols,
         importance_vector_t const& norm_rows,
-        size_t total_events,
+        int64_t total_events,
         double prob,
         double & out_max_variance,
         double & out_nmi
     );
 
+    importance_matrix_t transpose(const importance_matrix_t& sm);
 }  // gecmi
 
 #endif // GECMI__CONFUSION_HPP_

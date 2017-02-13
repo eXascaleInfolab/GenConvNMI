@@ -1,5 +1,7 @@
 #include <iostream>
 #include <limits>
+#include <type_traits>
+//#include <cassert>
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/math/special_functions/beta.hpp>
@@ -19,14 +21,17 @@ namespace gecmi {
     void normalize_events( counter_matrix_t const& cm,
         importance_matrix_t& out_norm_conf,
         importance_vector_t& out_norm_cols,
-        importance_vector_t& out_norm_rows
+        importance_vector_t& out_norm_rows,
+        importance_float_t total_events
         )
     {
         // First I need to calculate the total number of events
-        importance_float_t total_events = 0.0;
-        for( auto int2size: cm.data() )
-        {
-            total_events += int2size.second ;
+        if(total_events <= 0) {
+            total_events = 0;
+            for( auto int2size: cm.data() )
+            {
+                total_events += int2size.second ;
+            }
         }
         // That was easy... now I need to reallocate
         // the matrix dimensions on the output
@@ -95,9 +100,8 @@ namespace gecmi {
     // importance_float_t zlog( importance_float_t x ) {{{
     importance_float_t zlog( importance_float_t x )
     {
-        if(x >= std::numeric_limits<importance_float_t>::epsilon())
-            return log2( x );
-        else return std::numeric_limits<importance_float_t>::lowest();
+        return x >= std::numeric_limits<importance_float_t>::epsilon()
+            ? log2( x ) : std::numeric_limits<importance_float_t>::lowest();
     } // }}}
 
     // importance_float_t unnormalized_mi( norm_conf, norm_cols, norm_rows ) {{{
@@ -187,7 +191,7 @@ namespace gecmi {
         importance_matrix_t const& norm_conf,
         importance_vector_t const& norm_cols,
         importance_vector_t const& norm_rows,
-        size_t total_events,
+        int64_t total_events,
         double prob,
         double & out_max_variance,
         double & out_nmi
@@ -259,7 +263,8 @@ namespace gecmi {
         //size_t alpha_size = norm_conf.size1() * norm_conf.size2();
 
         importance_float_t s2 = 0.0;
-
+        static_assert(std::is_integral<decltype(total_events)>::value
+            , "variances_at_prob(), total_events should be integer here");
         // Now I'm goint fo calculate the error components...
         for( auto int2p: norm_conf.data() )
         {
@@ -274,7 +279,7 @@ namespace gecmi {
 
             // To understand this formula please check "more_about_the_error.nb"
             double pp = 1.0 - boost::math::ibeta_inv(
-                int64_t(total_events) - success_count,
+                total_events - success_count,
                 success_count + 1,
                 prob );
 
@@ -346,17 +351,32 @@ namespace gecmi {
         out_nmi = nmi;
     } // }}}
 
-    size_t total_events_from_unmi_cm(
+    importance_float_t total_events_from_unmi_cm(
         counter_matrix_t const& cm
     )
     {
-        size_t total_events = 0.0;
+        importance_float_t total_events = 0.0;
         for( auto int2size: cm.data() )
         {
             total_events += int2size.second ;
         }
 
         return total_events;
+    }
+
+    importance_matrix_t transpose(const importance_matrix_t& sm)
+    {
+        importance_matrix_t  rm(sm.size2(), sm.size1());  // Resulting matrix returned using NRVO optimization
+
+        const size_t  srsize = sm.size2();  // Row size;
+        for(auto val: sm.data())
+        {
+            size_t i = val.first / srsize;
+            size_t j = val.first % srsize;
+            rm(j, i) = val.second;
+            //assert(val.second == sm(i, j) && "transpose(), values validation failed");
+        }
+        return rm;
     }
 
 } // namespace gecmi

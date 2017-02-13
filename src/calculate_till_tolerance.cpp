@@ -43,27 +43,28 @@ calculated_info_t calculate_till_tolerance(
     counter_matrix_t cm =
         boost::numeric::ublas::zero_matrix< importance_float_t >( rows, cols );
 
-    importance_float_t nmi;
+    importance_float_t nmi = 0;
     importance_float_t max_var = 1.0e10;
 
     vertices_t  vertices;
-    vertices.reserve( nds1num ? nds1num : uniqSize( two_rel.first.left ) );
     {
-        bool  basefirst = true;  // Use first collection as vertices base
-//#ifdef DEBUG
+        const auto  verts1Size = nds1num ? nds1num : uniqSize( two_rel.first.left );
+#ifdef DEBUG
+        assert((!nds1num || nds1num == uniqSize(two_rel.first.left))
+            && "calculate_till_tolerance(), specified nodes number is invalid");
+#endif // DEBUG
         const auto  verts2Size = nds2num ? nds2num : uniqSize( two_rel.second.left );
-        if(vertices.capacity() != verts2Size) {
+        if(verts1Size != verts2Size)
             fprintf(stderr, "WARNING calculate_till_tolerance(), the number of nodes is different"
-                " in the comparing collections: %lu != %lu\n", vertices.capacity(), verts2Size);
+                " in the comparing collections: %lu != %lu\n", verts1Size, verts2Size);
             //throw domain_error("calculate_till_tolerance(), The vertices of both clusterings should be the same: "
             //    + to_string(vertices.size()) + " != " + to_string(vertDbgSize) + "\n");
-            //
-            // If the node base is not synced between the collections then use the smallest node base,
-            // because the missed vertices contribute nothing to NMI
-            if(vertices.capacity() > verts2Size)
-                basefirst = false;
-        }
-//#endif  // DEBUG
+        // ATTENTION: If the node base is not synced between the collections then
+        // use the smallest node base because the missed vertices contribute nothing to NMI.
+        // so the smallest collection will save the time giving the same accuracy
+        // or improve accuracy given the same time.
+        const bool  basefirst = verts1Size <= verts2Size;  // Use first collection as vertices base
+        vertices.reserve(basefirst ? verts1Size : verts2Size);
         auto& vmap = basefirst ? two_rel.first.left : two_rel.second.left;  // First vmap
         // Fill the vertices
         for(const auto& ind = vmap.begin(); ind != vmap.end();) {
@@ -117,6 +118,14 @@ calculated_info_t calculate_till_tolerance(
         // For the number of steps randomly selected vertices fill the matrix of modules (clusters) correspondence
         tbb::spin_mutex wait_for_matrix;
         try {
+            // Evaluate once from each side
+            steps /= 2;
+            parallel_for(
+                tbb::blocked_range< size_t >( 0, steps, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
+                direct_worker< counter_matrix_t* >( dcs, &cm, &wait_for_matrix )
+            );
+            swap(two_rel.first, two_rel.second);
+            cm = transpose(cm);
             parallel_for(
                 tbb::blocked_range< size_t >( 0, steps, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
                 direct_worker< counter_matrix_t* >( dcs, &cm, &wait_for_matrix )
@@ -125,13 +134,15 @@ calculated_info_t calculate_till_tolerance(
             throw domain_error("SystemIsSuspiciuslyFailingTooMuch ctt (maybe your partition is not solvable?)\n");
         }
 
-        size_t total_events = total_events_from_unmi_cm( cm );
+        importance_float_t total_events = total_events_from_unmi_cm( cm );
         normalize_events(
             cm,
             norm_conf,
             norm_cols,
-            norm_rows
+            norm_rows,
+            total_events
             );
+
         variances_at_prob(
             norm_conf, norm_cols, norm_rows,
             total_events,
@@ -141,7 +152,8 @@ calculated_info_t calculate_till_tolerance(
             );
 #ifdef DEBUG
         fprintf(stderr, "# calculate_till_tolerance(), iteration completed  with %lu events"
-            " and max_var: %G (epvar: %G)\n", total_events, max_var, epvar);
+            " and max_var: %G (epvar: %G), nmi: %G\n", uint64_t(total_events)
+            , max_var, epvar, nmi);
 #endif  // DEBUG
     }
 
