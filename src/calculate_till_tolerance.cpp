@@ -114,22 +114,25 @@ calculated_info_t calculate_till_tolerance(
     tbb::task_scheduler_init tsi;
 
     // Evaluate once from each side
-    steps /= 2;
+    double sratio  = double(rows) / cols;  // Step ratio
+    if(sratio > 1)
+        sratio = 2 - 1 / sratio;
+    const size_t  steps1 = sratio / 2 * steps;
+    fprintf(stderr, "# rows/cols: %G,  steps1: %lu, steps2: %lu,  sr: %G\n", double(rows) / cols
+        , steps1, steps - steps1, steps1 / double(steps - steps1));
     while( epvar < max_var )
     {
         // For the number of steps randomly selected vertices fill the matrix of modules (clusters) correspondence
         tbb::spin_mutex wait_for_matrix;
         try {
-            size_t csteps = steps * (float(cols) / rows);
             parallel_for(
-                tbb::blocked_range< size_t >( 0, csteps, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
+                tbb::blocked_range< size_t >( 0, steps - steps1, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
                 direct_worker< counter_matrix_t* >( dcs, &cm, &wait_for_matrix )
             );
             swap(two_rel.first, two_rel.second);
             cm = transpose(cm);
-            csteps = steps * (float(rows) / cols);
             parallel_for(
-                tbb::blocked_range< size_t >( 0, csteps, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
+                tbb::blocked_range< size_t >( 0, steps1, EVCOUNT_GRAIN ),  // EVCOUNT_THRESHOLD
                 direct_worker< counter_matrix_t* >( dcs, &cm, &wait_for_matrix )
             );
         } catch (tbb::tbb_exception const& e) {
