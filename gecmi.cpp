@@ -142,7 +142,8 @@ int main( int argc, char* argv[])
         const auto b1rnum = bcp1.uniqrSize();
         const auto b2rnum = bcp2.uniqrSize();
         printf("NMI: %G, FNMI: %G (cls1: %lu, cls2: %lu)\n", cit.nmi
-            , cit.nmi * exp(-double(abs(b1rnum - b2rnum)) / std::max(b1rnum, b2rnum))
+              // Note: 2^x is used instead of e^x to have the same base as in the log
+            , cit.nmi * pow(2, -double(abs(b1rnum - b2rnum)) / std::max(b1rnum, b2rnum))
             , b1rnum, b2rnum);
     } else printf("%G\n", cit.nmi);
 
