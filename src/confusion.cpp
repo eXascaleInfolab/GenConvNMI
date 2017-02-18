@@ -257,6 +257,11 @@ namespace gecmi {
         importance_float_t unmi = ni;
         importance_float_t nmi = unmi / std::max( H0 , H1 );
 
+#ifdef DEBUG
+        std::cerr << "variances_at_prob(), psum: "  << s << ", H0: " << H0 << ", H1: "
+            << H1 << ", unmi: " << unmi << ", nmi: " << nmi << std::endl;
+#endif // DEBUG
+
         // Let's populate a vector with all the increments of the
         // y according to the variation of the x.... of course this
         // vector will be big.

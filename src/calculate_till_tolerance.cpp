@@ -117,13 +117,15 @@ calculated_info_t calculate_till_tolerance(
     double sratio  = double(rows) / cols;  // Step ratio
     if(sratio > 1)
         sratio = 2 - 1 / sratio;
-    const size_t  steps1 = sratio / 2 * steps;
 #ifdef DEBUG
+    const size_t  steps1 = sratio / 2 * steps;
     fprintf(stderr, "# rows/cols: %G,  steps1: %lu, steps2: %lu,  sr: %G\n", double(rows) / cols
         , steps - steps1, steps1, steps1 / double(steps - steps1));
+    size_t  iterations = 0;
 #endif  // DEBUG
     while( epvar < max_var )
     {
+        const size_t  steps1 = sratio / 2 * steps;
         // For the number of steps randomly selected vertices fill the matrix of modules (clusters) correspondence
         tbb::spin_mutex wait_for_matrix;
         try {
@@ -157,15 +159,19 @@ calculated_info_t calculate_till_tolerance(
             max_var,
             nmi
             );
+
+            steps *= 1.25f;  // Use more steps on fail
 #ifdef DEBUG
         fprintf(stderr, "# calculate_till_tolerance(), iteration completed  with %lu events"
-            " and max_var: %G (epvar: %G), nmi: %G\n", uint64_t(total_events)
-            , max_var, epvar, nmi);
+            " and max_var: %G (epvar: %G), steps: %lu, nmi: %G\n", uint64_t(total_events)
+            , max_var, epvar, steps, nmi);
+        ++iterations;
 #endif  // DEBUG
     }
 
 #ifdef DEBUG
-    fprintf(stderr, "# calculate_till_tolerance(), completed  max_var: %G, nmi: %G\n", max_var, nmi);
+    fprintf(stderr, "# calculate_till_tolerance(), completed after %lu iterations"
+        ", max_var: %G, nmi: %G\n", iterations, max_var, nmi);
 #endif  // DEBUG
     return calculated_info_t{max_var, nmi};
 }// calculate_till_tolerance
