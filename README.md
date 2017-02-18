@@ -23,7 +23,7 @@ For the *compilation*:
 - [itbb](http://threadingbuildingblocks.org/itbb) >= v.3.0
 - g++ >= v.4.8
 
-For the *brebuilt executables*:
+For the *prebuilt executables*:
 - libtbb2:  `$ sudo apt-get install libtbb2`
 - libboost_program_options v1.58:  `$ sudo apt-get install libboost-program-options1.58.0`
 - libstdc++6: `$ sudo apt-get install libstdc++6`
