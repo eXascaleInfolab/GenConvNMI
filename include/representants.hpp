@@ -19,6 +19,8 @@ class representant_t {
 
 	constexpr static size_t  hashlen = 3*2;  // In items (size_t): num, sum, sum2
 
+	// ATTENTION: sizeof key should be >= sizeof hash array type to avoid trash padding
+	// on memory alignment
 	size_t  key;  // Required if used in the unordered containers
 	size_t  hash[hashlen];
 public:

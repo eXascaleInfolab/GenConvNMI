@@ -111,7 +111,8 @@ bool estimateSizes(size_t& ndsnum, size_t& clsnum, size_t cmsbytes, float member
 
 	if(clsnum && !ndsnum) {
 		// Typically the number of nodes is at least square of the number of clusters
-		ndsnum = clsnum * clsnum / membership;
+		// Note: optimistic estimate to not overuse the memory
+		ndsnum = 2 * clsnum;  // clsnum * clsnum / membership;
 		return true;
 	}
 
