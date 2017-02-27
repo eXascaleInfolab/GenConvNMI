@@ -13,55 +13,6 @@ namespace gecmi {
 using std::string;
 using std::ostream;
 
-class representant_t {
-//    	modules_set_t first;
-//    	modules_set_t second;
-
-	constexpr static size_t  hashlen = 3*2;  // In items (size_t): num, sum, sum2
-
-	// ATTENTION: sizeof key should be >= sizeof hash array type to avoid trash padding
-	// on memory alignment
-	size_t  key;  // Required if used in the unordered containers
-	size_t  hash[hashlen];
-public:
-	representant_t(const modules_set_t& s1, const modules_set_t& s2)
-	//: first(s1), second(s2)
-	: key(0)
-	{
-		hash[0] = s1.size();
-		for(auto v: s1) {
-			hash[2] += v;
-			hash[4] += v*v;
-		}
-
-		hash[1] = s2.size();
-		for(auto v: s2) {
-			hash[3] += v;
-			hash[5] += v*v;
-		}
-
-		//key = boost::hash_value(hash);
-		// or  std::hash<bitset<8*sizeof(hash)>>()(...)
-		key = std::hash<string>()(string(
-			reinterpret_cast<const char*>(hash), sizeof hash));
-	}
-
-	representant_t() = default;
-//    	representant_t(representant_t&&) = default;
-//    	representant_t(const representant_t&) = default;
-
-	bool operator ==(const representant_t& r) const  { return key == r.key; }
-//    	{
-//    		//return !memcmp(hash, r.hash, sizeof hash);
-//    		for(size_t i = 0; i < hashlen; ++i)
-//				if(hash[i] != r.hash[i])
-//					return false;
-//			return true;
-//		}
-
-	// Hasher for the STL containers
-	static size_t hashfn(const representant_t& r)  { return r.key; }
-};
 
 // Extract the modules for the given vertex.
 void get_modules(

@@ -91,7 +91,7 @@ calculated_info_t calculate_till_tolerance(
     float  avgdeg = fasteval ? 0.825f : 1;  // Normalized average degree [0, 1], let it be 0.65 for 10K and decreasing on larger nets
     // Note: vertices relations (>= vertices) are counted for the steps, which is important
     // in case the collection is a flattened hierarchy with multiple memberships for the nodes ~= number of levels
-    const size_t  steps_base = fasteval ? vertices.size() * 1.5f
+    const size_t  steps_base = fasteval ? std::max(vertices.size(), rows + cols) * 1.5f
         : std::min(two_rel.first.left.size(), two_rel.second.left.size());
     if(fasteval) {
         const float  degrt = log2(steps_base) - log2(32768);  // 2^15 = 32768

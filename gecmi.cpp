@@ -113,7 +113,7 @@ int main( int argc, char* argv[])
     if(b1lnum != b2lnum) {
         const bool  sync = vm.count("sync");
         fprintf(stderr, "WARNING, evaluating collections have different number of nodes: %lu != %lu"
-            ", sync enabled: %u\n", b1lnum, b2lnum, sync);
+            ", sync enabled: %s\n", b1lnum, b2lnum, sync ? "yes" : "no");
 
         // Synchronize the number of nodes in both collections if required
         if (sync) {
