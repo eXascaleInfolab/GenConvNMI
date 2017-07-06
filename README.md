@@ -11,19 +11,19 @@ Implemented by Artem Lutov <artem@exascale.info>
 
 ## Content
 - [Deployment](#deployment)
-	- [Dependencies](#dependencies)
+	- [Requirements](#requirements)
 	- [Compilation](#compilation)
 - [Usage](#usage)
 - [Related Projects](#related-projects)
 
 # Deployment
-## Dependencies
+## Requirements
 For the *compilation*:
 - [boost](http://www.boost.org/boost) >= v.1.47
-- [itbb](http://threadingbuildingblocks.org/itbb) >= v.3.0
-- g++ >= v.4.8
+- [itbb](http://threadingbuildingblocks.org/itbb) >= v.3.0 or *libtbb-dev*
+- g++ >= v.5
 
-For the *prebuilt executables*:
+For the *prebuilt executable* on Linux Ubuntu 16.04 x64*:
 - libtbb2:  `$ sudo apt-get install libtbb2`
 - libboost_program_options v1.58:  `$ sudo apt-get install libboost-program-options1.58.0`
 - libstdc++6: `$ sudo apt-get install libstdc++6`
@@ -34,7 +34,10 @@ Just execute `make`:
 ```
 $ make release
 ```
-Both release and debug builts are performed by default. [Codeblocks](http://www.codeblocks.org/) project is provided and can be used for the interactive build.
+Both release and debug builds are performed by default. [Codeblocks](http://www.codeblocks.org/) project is provided and can be used for the interactive build.
+
+> Build errors might occur if the default *g++/gcc <= 5.x*.  
+`g++-5` should be installed and `Makefile` might need to be edited replacing `g++`, `gcc` with `g++-5`, `gcc-5`.
 
 # Usage
 
@@ -47,7 +50,7 @@ The application uses files in CNL format:
 1 2
 2
 ```
-where each line corresponds to the network nodes forming the cluster (community, module).
+where each line corresponds to the network nodes forming the cluster (community, module). Empty lines and comments (lines starting with #) are skipped.
 > `:` symbol following the node id is used to specify the membership share in the CNL format, which is not supported by gecmi and is omitted (trimmed).
 
 To get the normalized mutual information considering overlaps of two clusterings, execute:
