@@ -19,15 +19,17 @@ namespace po = boost::program_options;
 using namespace gecmi;
 
 
-int main( int argc, char* argv[])
+int main(int argc, char* argv[])
 {
-    po::options_description desc(
-        "Invoke as : \n"
-        "    gecmi [options] <clusters1> <clusters2>\n"
-        "\n"
-        "Allowed options: \n"
-        );
+    string  descrstr = string("Generalized Conventional Mutual Information (GenConvMI)\n"
+        "Evaluates NMI for overlapping (soft, fuzzy) clusters (communities), compatible with standard NMI\n"
+        "https://github.com/eXascaleInfolab/GenConvNMI"
+        "\n\nUsage:\t").append(argv[0]).append(" [options] <clusters1> <clusters2>\n"
+        "clusters  - clusters file in the CNL format (https://github.com/eXascaleInfolab/PyCABeM/blob/master/formats/format.cnl),"
+        " where each line lists space separated ids of the cluster members\n"
+        "\nOptions");
 
+    po::options_description desc(descrstr);
     po::positional_options_description p;
     p.add( "input", 2 );
     desc.add_options()
