@@ -194,7 +194,8 @@ namespace gecmi {
         int64_t total_events,
         double prob,
         double & out_max_variance,
-        double & out_nmi
+        double & out_nmi,  //  NMI max
+        double & out_nmi_sqrt
     )
     {
         // Get a binomial distribution in place.
@@ -354,6 +355,7 @@ namespace gecmi {
         }
         out_max_variance = std::sqrt( s2 );
         out_nmi = nmi;
+        out_nmi_sqrt = unmi / std::sqrt( H0 * H1 );  // Note: H0/1 should never be 0
     } // }}}
 
     importance_float_t total_events_from_unmi_cm(

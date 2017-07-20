@@ -54,7 +54,8 @@ namespace gecmi {
         int64_t total_events,
         double prob,
         double & out_max_variance,
-        double & out_nmi
+        double & out_nmi,  //  NMI max
+        double & out_nmi_sqrt
     );
 
     importance_matrix_t transpose(const importance_matrix_t& sm);

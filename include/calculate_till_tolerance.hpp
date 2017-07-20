@@ -7,8 +7,9 @@
 namespace gecmi {
 
 struct calculated_info_t {
-    double empirical_variance;
-    double nmi;
+    double empirical_variance;  // For NMI [max]
+    double nmi;  // NMI_max
+    double nmi_sqrt;
 };
 
 calculated_info_t calculate_till_tolerance(two_relations_ref two_rel,

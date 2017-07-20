@@ -22,7 +22,8 @@ using namespace gecmi;
 int main(int argc, char* argv[])
 {
     string  descrstr = string("Generalized Conventional Mutual Information (GenConvMI)\n"
-        "Evaluates NMI for overlapping (soft, fuzzy) clusters (communities), compatible with standard NMI\n"
+        "Evaluates NMI (normalized by max and sqrt) for overlapping (soft, fuzzy) clusters (communities)"
+        ", compatible with standard NMI\n"
         "https://github.com/eXascaleInfolab/GenConvNMI"
         "\n\nUsage:\t").append(argv[0]).append(" [options] <clusters1> <clusters2>\n"
         "clusters  - clusters file in the CNL format (https://github.com/eXascaleInfolab/PyCABeM/blob/master/formats/format.cnl),"
@@ -143,11 +144,11 @@ int main(int argc, char* argv[])
     if (vm.count("fnmi")) {
         const auto b1rnum = bcp1.uniqrSize();
         const auto b2rnum = bcp2.uniqrSize();
-        printf("NMI: %G, FNMI: %G (cls1: %lu, cls2: %lu)\n", cit.nmi
+        printf("NMI: %G, FNMI: %G, NMI_sqrt: %G; cls1: %lu, cls2: %lu\n", cit.nmi
               // Note: 2^x is used instead of e^x to have the same base as in the log
             , cit.nmi * pow(2, -double(abs(b1rnum - b2rnum)) / std::max(b1rnum, b2rnum))
-            , b1rnum, b2rnum);
-    } else printf("%G\n", cit.nmi);
+            , cit.nmi_sqrt, b1rnum, b2rnum);
+    } else printf("NMI: %G, NMI_sqrt: %G\n", cit.nmi, cit.nmi_sqrt);
 
     return 0;
 }

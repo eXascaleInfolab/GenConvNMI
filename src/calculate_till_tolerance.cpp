@@ -43,7 +43,8 @@ calculated_info_t calculate_till_tolerance(
     counter_matrix_t cm =
         boost::numeric::ublas::zero_matrix< importance_float_t >( rows, cols );
 
-    importance_float_t nmi = 0;
+    importance_float_t nmi = 0;  // NMI_max
+    importance_float_t nmi_sqrt = 0;
     importance_float_t max_var = 1.0e10;
 
     vertices_t  vertices;
@@ -157,23 +158,24 @@ calculated_info_t calculate_till_tolerance(
             total_events,
             risk,
             max_var,
-            nmi
+            nmi, nmi_sqrt
             );
 
             steps *= 1.25f;  // Use more steps on fail
 #ifdef DEBUG
         fprintf(stderr, "# calculate_till_tolerance(), iteration completed  with %lu events"
-            " and max_var: %G (epvar: %G), steps: %lu, nmi: %G\n", uint64_t(total_events)
-            , max_var, epvar, steps, nmi);
+            " and max_var: %G (epvar: %G), steps: %lu, nmi_max: %G, nmi_sqrt: %G\n"
+            , uint64_t(total_events), max_var, epvar, steps, nmi, nmi_sqrt);
         ++iterations;
 #endif  // DEBUG
     }
 
 #ifdef DEBUG
     fprintf(stderr, "# calculate_till_tolerance(), completed after %lu iterations"
-        ", max_var: %G, nmi: %G\n", iterations, max_var, nmi);
+        ", max_var: %G, nmi_max: %G, nmi_sqrt: %G\n"
+        , iterations, max_var, nmi, nmi_sqrt);
 #endif  // DEBUG
-    return calculated_info_t{max_var, nmi};
+    return calculated_info_t{max_var, nmi, nmi_sqrt};
 }// calculate_till_tolerance
 
 }  // gecmi
