@@ -40,7 +40,8 @@ int main(int argc, char* argv[])
             "name of the input files" )
         ("sync,s", "synchronize the node base, for example to fairly evaluate against"
             " top K selected clusters that are subset of the original nodes")
-        ("fnmi,f", "evaluate also FNMI")
+        ("nmis,n", "output both NMI [max] and NMI_sqrt")
+        ("fnmi,f", "evaluate also FNMI, includes '-x'")
         ("risk,r",
             po::value<double>()->default_value(0.01),
             "probability of value being outside" )
@@ -144,11 +145,13 @@ int main(int argc, char* argv[])
     if (vm.count("fnmi")) {
         const auto b1rnum = bcp1.uniqrSize();
         const auto b2rnum = bcp2.uniqrSize();
-        printf("NMI: %G, FNMI: %G, NMI_sqrt: %G; cls1: %lu, cls2: %lu\n", cit.nmi
+        printf("NMI_max: %G, FNMI: %G, NMI_sqrt: %G; cls1: %lu, cls2: %lu\n", cit.nmi
               // Note: 2^x is used instead of e^x to have the same base as in the log
             , cit.nmi * pow(2, -double(abs(b1rnum - b2rnum)) / std::max(b1rnum, b2rnum))
             , cit.nmi_sqrt, b1rnum, b2rnum);
-    } else printf("NMI: %G, NMI_sqrt: %G\n", cit.nmi, cit.nmi_sqrt);
+    } else if (vm.count("nmis"))
+        printf("NMI_max: %G, NMI_sqrt: %G\n", cit.nmi, cit.nmi_sqrt);
+    else printf("%G\n", cit.nmi);
 
     return 0;
 }
