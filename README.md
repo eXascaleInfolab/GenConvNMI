@@ -61,19 +61,19 @@ $ gecmi file1 file2
 
 Execution Options:
 ```
--h [ --help ]                produce help message
---input arg                  name of the input files
--s [ --sync ]                synchronize the node base, for example to fairly
-								evaluate against top K selected clusters that
-								are subset of the original nodes
--n [ --nmis ]			 	 output both NMI [max] and NMI_sqrt
--f [ --fnmi ]                evaluate also FNMI, includes '-x'
--r [ --risk ] arg (=0.01)    probability of value being outside
--e [ --error ] arg (=0.01)   admissible error
--a [ --fast ]                apply fast approximate evaluations that are less
-								 accurate, but much faster on large networks
--m [ --membership ] arg (=1) average expected membership of nodes in the
-								 clusters, > 0, typically >= 1
+  -h [ --help ]                produce help message
+  --input arg                  name of the input files
+  -s [ --sync ]                synchronize the node base, for example to fairly
+                               evaluate against top K selected clusters that 
+                               are subset of the original nodes
+  -n [ --nmis ]                output both NMI [max] and NMI_sqrt
+  -f [ --fnmi ]                evaluate also FNMI, includes '-x'
+  -r [ --risk ] arg (=0.01)    probability of value being outside
+  -e [ --error ] arg (=0.01)   admissible error
+  -a [ --fast ]                apply fast approximate evaluations that are less
+                               accurate, but much faster on large networks
+  -m [ --membership ] arg (=1) average expected membership of nodes in the 
+                               clusters, > 0, typically >= 1
 ```
 If you want to tweak the precision, use the options `-e` and `-r`, to set the error and
 the risk respectively. See the [paper](http://arxiv.org/abs/1202.0425) for the meaning of these concepts.  
