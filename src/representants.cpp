@@ -15,7 +15,7 @@ namespace gecmi{
         module_set_t& out_mset2
         )
     {
-        // A map from vertex ( a single one) to a set of modules
+        // A map from vertex (a single one) to the set of modules
 
         // Get the modules 1
         auto range = vmb1.left.equal_range(vertex);
