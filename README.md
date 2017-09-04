@@ -51,9 +51,8 @@ The application uses files in CNL format:
 2
 ```
 where each line corresponds to the network nodes forming the cluster (community, module). Empty lines and comments (lines starting with #) are skipped.
-> `:` symbol following the node id is used to specify the membership share in the CNL format, which is not supported by gecmi and is omitted (trimmed).
-
-> All input ids must form the sequential range starting from 0 or 1!
+> `:` symbol following the node id is used to specify the membership share in the CNL format, which is not supported by gecmi and is omitted (trimmed).  
+If all input ids are not form the sequential range starting from 0 or 1 then `-i` option **should be used** to remap the input ids before the evaluation.
 
 To get the normalized mutual information considering overlaps of two clusterings, execute:
 

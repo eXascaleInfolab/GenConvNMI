@@ -2,9 +2,17 @@
 #define CLUSTER_READER__CLUSTER_READER_HPP_
 
 #include <istream>
+#include <unordered_map>
 
 
 namespace gecmi {
+
+using std::unordered_map;
+
+
+// Mapping of ids to provide solid range starting from 0 if required
+typedef unsigned Id;  // Use unsigned to reduce the memory consumption on remapping
+typedef unordered_map<Id, Id>  IdMap;
 
 // Input interface...
 class input_interface {
@@ -18,11 +26,9 @@ public:
     virtual ~input_interface() = default;
 };
 
-// The name of this method reflects the fact that remappings
-// are not made in the numbers of vertices and modules
-size_t read_clusters_without_remappings(std::istream& input,
+size_t read_clusters(std::istream& input,
     input_interface& inp_interf, const char* fname=nullptr,
-    float membership=1.f);  // Average expected membership
+    IdMap* idmap=nullptr, float membership=1.f);  // Average expected membership
 }  // gecmi
 
 #endif  // CLUSTER_READER__CLUSTER_READER_HPP_

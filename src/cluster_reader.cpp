@@ -9,9 +9,9 @@ namespace gecmi {
 using std::stoul;
 
 
-// size_t read_clusters_without_remappings( istream& input, input_interface& ) {{{
-size_t read_clusters_without_remappings( istream& input,
-    input_interface& inp_interf, const char* fname, float membership)
+// size_t read_clusters( istream& input, input_interface& ) {{{
+size_t read_clusters( istream& input,
+    input_interface& inp_interf, const char* fname, IdMap* idmap, float membership)
 {
     // Note: CNL [CSN] format only is supported
 	string  line;
@@ -20,9 +20,10 @@ size_t read_clusters_without_remappings( istream& input,
 	parseHeader(input, line, clsnum, ndsnum);
 
 	const size_t  cmsbytes = ndsnum ? 0 : inputSize(input, fname);
-	const bool  estimated = !ndsnum || !clsnum ? estimateSizes(ndsnum, clsnum, cmsbytes, membership) : false;  // Whether the number of nodes/clusters is estimated
+	const bool  estimated = !ndsnum || !clsnum
+		? estimateSizes(ndsnum, clsnum, cmsbytes, membership) : false;  // Whether the number of nodes/clusters is estimated
 //#ifdef DEBUG
-//	fprintf(stderr, "# read_clusters_without_remappings(), %lu bytes"
+//	fprintf(stderr, "# read_clusters(), %lu bytes"
 //		" => estimated %lu nodes, %lu clusters\n", cmsbytes, ndsnum, clsnum);
 //#endif // DEBUG
 
@@ -31,7 +32,7 @@ size_t read_clusters_without_remappings( istream& input,
 		// Note: reserve more than ndsnum * membership in case membership is not specified and overlaps are present
 		const size_t  rsvsize = ndsnum * membership + clsnum;  // Note: bimap has the same size of both sides
 #ifdef DEBUG
-		fprintf(stderr, "# read_clusters_without_remappings(), preallocating"
+		fprintf(stderr, "# read_clusters(), preallocating"
 			" %lu (%lu, %lu) elements, estimated: %u\n", rsvsize, ndsnum, clsnum, estimated);
 #endif // DEBUG
         inp_interf.reserve_vertices_modules(rsvsize, rsvsize);
@@ -39,6 +40,10 @@ size_t read_clusters_without_remappings( istream& input,
 
     size_t iline = 0;  // Payload line index (internal id of the cluster)
     size_t members = 0;  // Evaluate the actual number of members (nodes including repetitions)
+	Id  uid = idmap ? idmap->size() : 0;   // Unique id
+    // Preallocate idmap initially
+    if(idmap && !idmap->size())
+		idmap->reserve(ndsnum / sqrt(clsnum));  // Consider overlaps to not over allocate
     do {
         char *tok = strtok(const_cast<char*>(line.data()), " \t");
 
@@ -57,9 +62,18 @@ size_t read_clusters_without_remappings( istream& input,
                 continue;
         }
         do {
+        	size_t  id = stoul(tok);  // Allow input ids to have huge range
+			// Remap input ids to form a solid range if required
+			if(idmap) {
+				auto res = idmap->emplace(id, uid);
+				if(res.second)
+					id = uid++;
+				else id = res.first->second;
+			}
+
             // Note: this algorithm does not support fuzzy overlaps (nodes with defined shares),
             // the share part is skipped if exists
-            inp_interf.add_vertex_module(stoul(tok), iline);
+            inp_interf.add_vertex_module(id, iline);
             // Note: the number of nodes can't be evaluated here simply incrementing the value,
             // because clusters might have overlaps, i.e. the nodes might have multiple membership
             ++members;
@@ -72,12 +86,12 @@ size_t read_clusters_without_remappings( istream& input,
 
     const size_t  ansnum = inp_interf.uniqlSize();;  // Evaluate the actual number of nodes, resulting value
 #ifdef DEBUG
-	fprintf(stderr, "# read_clusters_without_remappings(), expected & actual"
+	fprintf(stderr, "# read_clusters(), expected & actual"
 		" nodes: (%lu, %lu), clusters: (%lu, %lu); nodes membership: %G\n"
 		, ndsnum, ansnum, clsnum, iline, float(members) / ansnum);
 #endif // DEBUG
 	if(!estimated && ((clsnum && clsnum != iline) || (ndsnum && ndsnum != ansnum)))
-		fprintf(stderr, "WARNING read_clusters_without_remappings(),"
+		fprintf(stderr, "WARNING read_clusters(),"
 			" The specified number of nodes/clusters does not correspond to the actual one"
 			"  nodes: (%lu, %lu), clusters: (%lu, %lu)\n"
 			, ndsnum, ansnum, clsnum, iline);

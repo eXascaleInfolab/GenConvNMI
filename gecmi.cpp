@@ -40,8 +40,10 @@ int main(int argc, char* argv[])
             "name of the input files" )
         ("sync,s", "synchronize the node base, for example to fairly evaluate against"
             " top K selected clusters that are subset of the original nodes")
+        ("id-remap,i", "remap ids allowing arbitrary input ids (non-contiguous ranges)"
+            ", otherwise ids should form a solid range and start from 0 or 1")
         ("nmis,n", "output both NMI [max] and NMI_sqrt")
-        ("fnmi,f", "evaluate also FNMI, includes '-x'")
+        ("fnmi,f", "evaluate also FNMI, includes '-n'")
         ("risk,r",
             po::value<double>()->default_value(0.01),
             "probability of value being outside" )
@@ -96,19 +98,26 @@ int main(int argc, char* argv[])
         throw invalid_argument("membership = " + to_string(membership)
 			+ " should be positive");
 
-    b1lnum = read_clusters_without_remappings(
-        in1,
-        bcp1,
-        positionals[0].c_str(),
-        membership
-    );
+    {
+        const bool remap = vm.count("id-remap");  // Remap ids
+        IdMap idmap;  // Mapping of ids to provide solid range starting from 0 if required
 
-    b2lnum = read_clusters_without_remappings(
-        in2,
-        bcp2,
-        positionals[1].c_str(),
-        membership
-    );
+        b1lnum = read_clusters(
+            in1,
+            bcp1,
+            positionals[0].c_str(),
+            remap ? &idmap : nullptr,
+            membership
+        );
+
+        b2lnum = read_clusters(
+            in2,
+            bcp2,
+            positionals[1].c_str(),
+            remap ? &idmap : nullptr,
+            membership
+        );
+    }
 
 #ifdef DEBUG
         assert(b1lnum == bcp1.uniqlSize() && b2lnum == bcp2.uniqlSize()

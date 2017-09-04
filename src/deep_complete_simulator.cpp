@@ -106,6 +106,9 @@ struct deep_complete_simulator::pimpl_t {
 
         module_set_t rm1, rm2;
         get_modules( vertex, rm1, rm2 );
+        // Check for the input ids starting from 1
+        if(!vertex && !rm1.size() && !rm2.size())
+            get_modules( ++vertex, rm1, rm2 );
 
         // The number of attempts to get modules
         const size_t  attempts = (rm1.size() + rm2.size()) * 2;
