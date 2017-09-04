@@ -67,8 +67,11 @@ Execution Options:
   -s [ --sync ]                synchronize the node base, for example to fairly
                                evaluate against top K selected clusters that 
                                are subset of the original nodes
+  -i [ --id-remap ]            remap ids allowing arbitrary input ids 
+                               (non-contiguous ranges), otherwise ids should 
+                               form a solid range and start from 0 or 1
   -n [ --nmis ]                output both NMI [max] and NMI_sqrt
-  -f [ --fnmi ]                evaluate also FNMI, includes '-x'
+  -f [ --fnmi ]                evaluate also FNMI, includes '-n'
   -r [ --risk ] arg (=0.01)    probability of value being outside
   -e [ --error ] arg (=0.01)   admissible error
   -a [ --fast ]                apply fast approximate evaluations that are less
