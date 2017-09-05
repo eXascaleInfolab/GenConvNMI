@@ -7,7 +7,7 @@ The paper: [Comparing network covers using mutual information](https://arxiv.org
 
 This implementation is part of the [PyCABeM](https://github.com/eXascaleInfolab/PyCABeM) benchmark. *GenConvNMI* is significantly reimplemented version of the original [gecmi](https://bitbucket.org/dsign/gecmi) with additional features, much better performance (~2 ORDERS faster, consumes 2x less memory and is more accurate on large networks than the original version), fully automated build and without the redundant dependencies (the Pyhton wrapper is removed). This version evaluates both NMI and FNMI (optionally) considering overlaps.  
 FNMI is so called *Fair NMI*, see the paper [Is Normalized Mutual Information a Fair Measure for Comparing Community Detection Methods](http://ieeexplore.ieee.org/document/7403755/) by Alessia Amelio and Clara Pizzuti, ASONAM'15. However, FNMI is less meaningful and less fair than the standard NMI, because FNMI measure is affected by the number of clusters much more than by their actual structure that should be evaluated.  
-Implemented by Artem Lutov <artem@exascale.info>
+Implemented by Artem Lutov <artem@exascale.info>  
 
 ## Content
 - [Deployment](#deployment)

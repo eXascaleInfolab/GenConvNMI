@@ -14,6 +14,8 @@ using std::endl;
 
 namespace gecmi {
 
+    constexpr static importance_float_t  eps = std::numeric_limits<importance_float_t>::epsilon();
+
     // void normalize_events( cm, out_double_mat, out_cols, out_rows ) {{{
     //    Here `normalized' means just "divided by the total so that sum
     //    of frequencies/probabilities be one". It doesn't have anything to
@@ -100,8 +102,7 @@ namespace gecmi {
     // importance_float_t zlog( importance_float_t x ) {{{
     importance_float_t zlog( importance_float_t x )
     {
-        constexpr static importance_float_t  eps = std::numeric_limits<importance_float_t>::epsilon();
-        return x >= eps ? x <= 1 - eps ? log2( x ) : -1 : 0;
+        return x >= eps ? log2( x ) : 0;  // x <= 1 - eps ? log2( x ) : 1 : 0;
     } // }}}
 
     // importance_float_t unnormalized_mi( norm_conf, norm_cols, norm_rows ) {{{
@@ -125,7 +126,7 @@ namespace gecmi {
             // g = i*n+j
             size_t j = g % col_count;
             size_t i = g / col_count;
-            ni -= p*zlog(
+            ni += p*zlog(
                 p / (
                     norm_cols(j) * norm_rows(i)
                 )
@@ -159,7 +160,7 @@ namespace gecmi {
             // marginal probabilities of all the rows, and we can visualize
             // it as a column vector. Similarly, we can visualize norm_cols as
             // a row vector (although it is the sum, column-wize, of all
-            ni -= p*zlog(
+            ni += p*zlog(
                 p / (
                     norm_cols(j) * norm_rows(i)
                 )
@@ -228,7 +229,7 @@ namespace gecmi {
             // marginal probabilities of all the rows, and we can visualize
             // it as a column vector. Similarly, we can visualize norm_cols as
             // a row vector (although it is the sum, column-wize, of all
-            ni -= p*zlog(
+            ni += p*zlog(
                 p / (
                     norm_cols(j) * norm_rows(i)
                 )
@@ -242,7 +243,9 @@ namespace gecmi {
         importance_float_t H0 = 0;
         for( importance_float_t p: norm_cols )
         {
-
+#ifdef DEBUG
+            assert(p > -eps && p < 1 + eps && "variances_at_prob(), H0 p is invalid");
+#endif // DEBUG
             H0 -= p * zlog( p );
             s += p;
         }
@@ -251,16 +254,24 @@ namespace gecmi {
         s = 0.0;
         for( importance_float_t p: norm_rows )
         {
+#ifdef DEBUG
+            assert(p > -eps && p < 1 + eps && "variances_at_prob(), H1 p is invalid");
+#endif // DEBUG
             H1 -= p * zlog( p );
             s += p;
         }
 
+#ifdef DEBUG
+        assert(ni > -eps && "variances_at_prob(), nmi is invalid");
+#endif // DEBUG
         importance_float_t unmi = ni;
-        importance_float_t nmi = unmi / std::max( H0 , H1 );
+        importance_float_t nmi = unmi >= eps ? unmi / std::max( H0 , H1 )
+          : (H0 >= eps || H1 >= eps ? 0 : 1);
 
 #ifdef DEBUG
         std::cerr << "variances_at_prob(), psum: "  << s << ", H0: " << H0 << ", H1: "
             << H1 << ", unmi: " << unmi << ", nmi: " << nmi << std::endl;
+        assert(H0 >= 0 && H1 >= 0 && "variances_at_prob(), H0 or H1 is invalid");
 #endif // DEBUG
 
         // Let's populate a vector with all the increments of the
@@ -334,14 +345,14 @@ namespace gecmi {
             // a row vector.
 
             // Suppressing old effect
-            importance_float_t old_summand = -p*zlog(
+            importance_float_t old_summand = p*zlog(
                 p / (
                     norm_cols(j) * norm_rows(i)
                 ));
             //cout << "old summand " << old_summand << std::endl;
             ni = unmi - old_summand;
             // Putting new effect
-            importance_float_t new_summand = -pp*zlog( pp / ( h0new * h1new ) );
+            importance_float_t new_summand = pp*zlog( pp / ( h0new * h1new ) );
             //cout << "new summand " << new_summand << std::endl;
 
             ni += new_summand;
@@ -356,7 +367,11 @@ namespace gecmi {
         }
         out_max_variance = std::sqrt( s2 );
         out_nmi = nmi;
-        out_nmi_sqrt = nmi > 0 ? unmi / std::sqrt( H0 * H1 ) : 0;  // Note: H0/1 should never be 0
+#ifdef DEBUG
+        assert(nmi > -eps && "variances_at_prob(), nmi is invalid");
+#endif // DEBUG
+        out_nmi_sqrt = unmi >= eps ? unmi / std::sqrt( H0 * H1 )  // Note: H0/1 should never be 0 if unmi != 0
+          : (H0 >= eps || H1 >= eps ? 0 : 1);
     } // }}}
 
     importance_float_t total_events_from_unmi_cm(
