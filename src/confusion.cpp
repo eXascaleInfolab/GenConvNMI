@@ -102,7 +102,10 @@ namespace gecmi {
     // importance_float_t zlog( importance_float_t x ) {{{
     importance_float_t zlog( importance_float_t x )
     {
-        return x >= eps ? log2( x ) : 0;  // x <= 1 - eps ? log2( x ) : 1 : 0;
+        return x >= eps ? log2( x ) : 0;  // Note: to have x*log(x) = 0 instead of -inf
+        // Matching of the same clusters should yield 1, -1 considering that returning log vals are negative
+        //return x <= 1 - eps ? x >= eps ? log2( x ) : std::numeric_limits<importance_float_t>::lowest() : -1;
+        //return x <= 1 - eps ? x >= eps ? log2( x ) : 0 : -1;
     } // }}}
 
     // importance_float_t unnormalized_mi( norm_conf, norm_cols, norm_rows ) {{{
@@ -261,9 +264,6 @@ namespace gecmi {
             s += p;
         }
 
-#ifdef DEBUG
-        assert(ni > -eps && "variances_at_prob(), nmi is invalid");
-#endif // DEBUG
         importance_float_t unmi = ni;
         importance_float_t nmi = unmi >= eps ? unmi / std::max( H0 , H1 )
           : (H0 >= eps || H1 >= eps ? 0 : 1);
@@ -271,6 +271,7 @@ namespace gecmi {
 #ifdef DEBUG
         std::cerr << "variances_at_prob(), psum: "  << s << ", H0: " << H0 << ", H1: "
             << H1 << ", unmi: " << unmi << ", nmi: " << nmi << std::endl;
+        assert(ni > -eps && "variances_at_prob(), nmi is invalid");
         assert(H0 >= 0 && H1 >= 0 && "variances_at_prob(), H0 or H1 is invalid");
 #endif // DEBUG
 
