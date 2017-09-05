@@ -80,6 +80,7 @@ calculated_info_t calculate_till_tolerance(
 
     // Evaluate required accuracy:
     const double  acr = 2*risk/(risk + epvar)*epvar;
+    assert(acr > 0 && acr < 1 && "calculate_till_tolerance(), acr is invalid");
     // Evaluate required visiting ratio:  node_acr_min >= (1 / (node_degree=2) / 2) ^ visrt
     // Note: /2 because any link has 2 incident nodes and is evaluated from both sides
     // P_lowest(link) occurs in case the node has 2 links and is equal to: (1/node_degree / 2)^visrt
@@ -92,8 +93,8 @@ calculated_info_t calculate_till_tolerance(
     float  avgdeg = fasteval ? 0.825f : 1;  // Normalized average degree [0, 1], let it be 0.65 for 10K and decreasing on larger nets
     // Note: vertices relations (>= vertices) are counted for the steps, which is important
     // in case the collection is a flattened hierarchy with multiple memberships for the nodes ~= number of levels
-    const size_t  steps_base = fasteval ? std::max(vertices.size(), rows + cols) * 1.5f
-        : std::min(two_rel.first.left.size(), two_rel.second.left.size());
+    const size_t  steps_base = std::max(fasteval ? std::max(vertices.size(), rows + cols) * 1.5f
+        : std::min(two_rel.first.left.size(), two_rel.second.left.size()),  1 / float(epvar * sqrt(risk)));
     if(fasteval) {
         const float  degrt = log2(steps_base) - log2(32768);  // 2^15 = 32768
         if(degrt > 1 / avgdeg)  // ~ >= 60 K

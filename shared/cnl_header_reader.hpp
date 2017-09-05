@@ -34,7 +34,8 @@ using std::istringstream;
 //! \param[out] clsnum size_t&  - resulting number of clusters if specified, 0 in case of parsing errors
 //! \param[out] ndsnum size_t&  - resulting number of nodes if specified, 0 in case of parsing errors
 //! \return void
-void parseHeader(istream& fsm, string& line, size_t& clsnum, size_t& ndsnum) {
+void parseHeader(istream& fsm, string& line, size_t& clsnum, size_t& ndsnum)
+{
 	// Process the header, which is a special initial comment
 	// The target header is:  # Clusters: <cls_num>[,] Nodes: <cls_num>
 	const string  clsmark = "clusters";

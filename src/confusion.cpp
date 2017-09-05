@@ -100,8 +100,8 @@ namespace gecmi {
     // importance_float_t zlog( importance_float_t x ) {{{
     importance_float_t zlog( importance_float_t x )
     {
-        return x >= std::numeric_limits<importance_float_t>::epsilon()
-            ? log2( x ) : std::numeric_limits<importance_float_t>::lowest();
+        constexpr static importance_float_t  eps = std::numeric_limits<importance_float_t>::epsilon();
+        return x >= eps ? x <= 1 - eps ? log2( x ) : -1 : 0;
     } // }}}
 
     // importance_float_t unnormalized_mi( norm_conf, norm_cols, norm_rows ) {{{
@@ -125,7 +125,7 @@ namespace gecmi {
             // g = i*n+j
             size_t j = g % col_count;
             size_t i = g / col_count;
-            ni += p*zlog(
+            ni -= p*zlog(
                 p / (
                     norm_cols(j) * norm_rows(i)
                 )
@@ -159,7 +159,7 @@ namespace gecmi {
             // marginal probabilities of all the rows, and we can visualize
             // it as a column vector. Similarly, we can visualize norm_cols as
             // a row vector (although it is the sum, column-wize, of all
-            ni += p*zlog(
+            ni -= p*zlog(
                 p / (
                     norm_cols(j) * norm_rows(i)
                 )
@@ -228,7 +228,7 @@ namespace gecmi {
             // marginal probabilities of all the rows, and we can visualize
             // it as a column vector. Similarly, we can visualize norm_cols as
             // a row vector (although it is the sum, column-wize, of all
-            ni += p*zlog(
+            ni -= p*zlog(
                 p / (
                     norm_cols(j) * norm_rows(i)
                 )
@@ -284,10 +284,12 @@ namespace gecmi {
             //double pp = quantile( bn, prob ) / total_events;
 
             // To understand this formula please check "more_about_the_error.nb"
-            double pp = 1.0 - boost::math::ibeta_inv(
-                total_events - success_count,
-                success_count + 1,
-                prob );
+            double pp = 1.0;
+            if(total_events != success_count)
+                pp -= boost::math::ibeta_inv(
+                  total_events - success_count,
+                  success_count + 1,
+                  prob );
 
             //std::cout <<
                 //boost::format( "total_events %1% success_count %2% prob %3%" )
@@ -332,14 +334,14 @@ namespace gecmi {
             // a row vector.
 
             // Suppressing old effect
-            importance_float_t old_summand = p*zlog(
+            importance_float_t old_summand = -p*zlog(
                 p / (
                     norm_cols(j) * norm_rows(i)
                 ));
             //cout << "old summand " << old_summand << std::endl;
             ni = unmi - old_summand;
             // Putting new effect
-            importance_float_t new_summand =pp*zlog( pp / ( h0new * h1new ) );
+            importance_float_t new_summand = -pp*zlog( pp / ( h0new * h1new ) );
             //cout << "new summand " << new_summand << std::endl;
 
             ni += new_summand;
@@ -351,11 +353,10 @@ namespace gecmi {
             importance_float_t var = nv - nmi ;
 
             s2 += var*var;
-
         }
         out_max_variance = std::sqrt( s2 );
         out_nmi = nmi;
-        out_nmi_sqrt = nmi ? unmi / std::sqrt( H0 * H1 ) : 0;  // Note: H0/1 should never be 0
+        out_nmi_sqrt = nmi > 0 ? unmi / std::sqrt( H0 * H1 ) : 0;  // Note: H0/1 should never be 0
     } // }}}
 
     importance_float_t total_events_from_unmi_cm(
