@@ -81,7 +81,7 @@ struct deep_complete_simulator::pimpl_t {
             //cout << "-" << endl;
             try_get_sample( result );  // The most heavy function !!!
             if ( result.first == RESULT_NONE )
-                result.failed_attempts += result.importance;
+                ++result.failed_attempts;  // += result.importance;
             if ( ++attempt_count >= MAX_ACCEPTABLE_FAILURES ) {
                 //result.first = result.second = 0;
                 //result.importance = 0;
@@ -92,26 +92,36 @@ struct deep_complete_simulator::pimpl_t {
 
         // Note: typically the number of attempts is 1
         //if(attempt_count  > 1)
+        ////    fprintf(stderr, "Attempts: %u\n", attempt_count);
         //    cout << "Attempts: " <<  attempt_count << endl;
         return result;
     }
 
     // optional<...> try_get_sample() {{{
     //    This is indeed a huge method.
-    void try_get_sample(simulation_result_t& result )  // The most heavy function !!!
+    void try_get_sample(simulation_result_t& result)  // The most heavy function !!!
     {
         result.importance = 1.0;  // Probability E [0, 1]
         // Get the sets of modules (from 2 clusterings/partitions) for the first vertex
-        size_t vertex = verts[lindis(rndgen)];  // 0, rndgen, rd
-
+        // Note: verts is array of indices
+        size_t vertex;  // = verts[lindis(rndgen)];  // 0, rndgen, rd
         module_set_t rm1, rm2;
-        get_modules( vertex, rm1, rm2 );
-        // Check for the input ids starting from 1
-        if(!vertex && !rm1.size() && !rm2.size())
-            get_modules( ++vertex, rm1, rm2 );
+        // Note: some vertices might be outlier that are not present in any modules, skip them
+        {
+            size_t  i = 0;
+            const size_t  imax = verts.size();
+            do {
+                vertex = verts[lindis(rndgen)];
+                get_modules( vertex, rm1, rm2 );
+                // Use vertex that occurs in any module, otherwise take another vertex
+            } while(!rm1.size() && !rm2.size() && ++i < imax);
+            if(i == imax)
+                throw std::runtime_error("try_get_sample(), too many vertices are not members of any module in the input data\n");
+        }
 
         // The number of attempts to get modules
         const size_t  attempts = (rm1.size() + rm2.size()) * 2;
+        result.importance /= std::max<size_t>(sqrt(rm1.size() * rm2.size()), 1);  // The more common vertex the less it is important
 
         // The automatons that track the state
         //player_automaton pa1(move(rm1)), pa2(move(rm2));
@@ -132,15 +142,13 @@ struct deep_complete_simulator::pimpl_t {
         )
         {
             ++used_vertex_index;
-
             // Parameters for the second vertex
-
-            //auto iv2 = lindis(rndgen);
-            //vertex = verts[ iv2 ];
-
-            // Take modules from clustering 1 or 2 relevant to the origin vertex
-            const auto  iv2 = lindis(rndgen);  // rndgen, rd
+            static_assert(std::is_integral<decltype(rd())>::value && std::is_unsigned<decltype(rd())>::value
+                , "try_get_sample(), rd() value has unexpected type\n");
+            // Note: rd() might return the same values on parallel execution, but not lindis.
+            const auto  iv2 = lindis(rndgen) ^ rd();  // rndgen, rd
             bool  v2first = iv2 % 2;
+            // Take modules from clustering 1 or 2 relevant to the origin vertex
             module_set_t  v2bms = move(v2first ? rm1 : rm2);  // Base modules for v2
             // ATTENTION: a single selected module set can be empty
             // if node base is not synced (differs for the left/right collections)
@@ -223,6 +231,8 @@ struct deep_complete_simulator::pimpl_t {
             pa1.take_set( rm1 );
             pa2.take_set( rm2 );
         }
+        // Consider importance of the second vertex
+        result.importance /= std::max<size_t>(sqrt(rm1.size() * rm2.size()), 1);  // The more common vertex the less it is important
 //        if(used_vertex_index >= 5)
 //            printf("%lu ", used_vertex_index);
 
@@ -233,6 +243,8 @@ struct deep_complete_simulator::pimpl_t {
             result.first = pa1.get_a_module();
             result.second = pa2.get_a_module();
         } else result.first = result.second = RESULT_NONE;
+        //fprintf(stderr, "> try_get_sample(): %lu, %lu (p: %G, failed: %G);  vertex: %lu, cls1: %lu, cls2: %lu\n"
+        //    , result.first, result.second, result.importance, result.failed_attempts, vertex, rm1.size(), rm2.size());
     }
 
 }; // pimpl_t

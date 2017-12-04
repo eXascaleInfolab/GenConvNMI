@@ -38,6 +38,9 @@ namespace gecmi {
                     std::set_difference(rms.begin(), rms.end(), mset.begin()
                         , mset.end(), std::inserter(new_rms, new_rms.begin()));
 
+                //fprintf(stderr, ">>> take_set(), sizes mset: %lu, rms: %lu, new_rms: %lu\n"
+                //    , mset.size(), rms.size(), new_rms.size());
+
                 // Accept the operation only if it doesn't gets to a zero state
                 if ( !new_rms.empty() )
                 	rms = move(new_rms);
