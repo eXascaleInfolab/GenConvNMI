@@ -67,6 +67,11 @@ namespace gecmi {
 #endif // DEBUG
             return *rms.begin();
         }
+
+        const remaining_modules_set_t& get_modules() const
+        {
+            return rms;
+        }
     };
 
     player_automaton::player_automaton(remaining_modules_set_t const& rset)
@@ -104,6 +109,11 @@ namespace gecmi {
     size_t player_automaton::get_a_module() const
     {
         return impl->get_a_module();
+    }
+
+    const remaining_modules_set_t& player_automaton::get_modules() const
+    {
+        return impl->get_modules();
     }
 
 } // gecmi

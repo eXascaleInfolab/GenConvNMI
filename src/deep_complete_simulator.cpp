@@ -17,7 +17,7 @@ using std::random_device;
 
 // What's the failure proportion before bailing out... if I get
 // at least this many failures, an excpetion will be raised.
-constexpr size_t MAX_ACCEPTABLE_FAILURES = 1024;  // 31;  Acceptable number of the subsequently missed vertices
+constexpr size_t MAX_ACCEPTABLE_FAILURES = 127;  // Acceptable number of the subsequently missed vertices
 
 struct deep_complete_simulator::pimpl_t {
 
@@ -104,6 +104,7 @@ struct deep_complete_simulator::pimpl_t {
         result.importance = 1.0;  // Probability E [0, 1]
         // Get the sets of modules (from 2 clusterings/partitions) for the first vertex
         // Note: verts is array of indices
+        size_t ivetr;
         size_t vertex;  // = verts[lindis(rndgen)];  // 0, rndgen, rd
         module_set_t rm1, rm2;
         // Note: some vertices might be outlier that are not present in any modules, skip them
@@ -111,7 +112,7 @@ struct deep_complete_simulator::pimpl_t {
             size_t  i = 0;
             const size_t  imax = verts.size();
             do {
-                vertex = verts[lindis(rndgen)];
+                vertex = verts[ivetr = lindis(rndgen)];
                 get_modules( vertex, rm1, rm2 );
                 // Use vertex that occurs in any module, otherwise take another vertex
             } while(!rm1.size() && !rm2.size() && ++i < imax);
@@ -237,11 +238,26 @@ struct deep_complete_simulator::pimpl_t {
 //            printf("%lu ", used_vertex_index);
 
         // Now, if we managed to finish
-        if ( pa1.get_status() == pa_status_t::SUCCESS
-            && pa2.get_status() == pa_status_t::SUCCESS )
+        if((pa1.get_status() == pa_status_t::SUCCESS && pa2.get_status() != pa_status_t::EMPTY_SET)
+        || (pa2.get_status() == pa_status_t::SUCCESS && pa1.get_status() != pa_status_t::EMPTY_SET))
         {
-            result.first = pa1.get_a_module();
-            result.second = pa2.get_a_module();
+            const auto& mods = pa1.get_status() == pa_status_t::SUCCESS
+                ? pa2.get_modules() : pa1.get_modules();
+#if DEBUG
+            assert(mods.size() && "try_get_sample(), non-empty set should have positive size");
+#endif // DEBUG
+            result.importance /= mods.size();
+            const size_t  mdoffs = (ivetr ^ rd()) % mods.size();
+            auto imd = mods.begin();
+            if(pa1.get_status() == pa_status_t::SUCCESS) {
+                result.first = pa1.get_a_module();
+                advance(imd, mdoffs);
+                result.second = *imd;
+            } else {
+                advance(imd, mdoffs);
+                result.first = *imd;
+                result.second = pa2.get_a_module();
+            }
         } else result.first = result.second = RESULT_NONE;
         //fprintf(stderr, "> try_get_sample(): %lu, %lu (p: %G, failed: %G);  vertex: %lu, cls1: %lu, cls2: %lu\n"
         //    , result.first, result.second, result.importance, result.failed_attempts, vertex, rm1.size(), rm2.size());

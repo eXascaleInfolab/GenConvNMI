@@ -266,7 +266,7 @@ namespace gecmi {
 
         importance_float_t unmi = ni;
         importance_float_t nmi = unmi >= eps ? unmi / std::max( H0 , H1 )
-          : (H0 >= eps || H1 >= eps ? 0 : 1);
+          : (H0 >= eps && H1 >= eps ? 0 : 1);
 
 #ifdef DEBUG
         std::cerr << "variances_at_prob(), psum: "  << s << ", H0: " << H0 << ", H1: "
@@ -360,7 +360,8 @@ namespace gecmi {
 
             // Now ni contains the no-sum factor
             // Do the division
-            importance_float_t nv = ni / std::max( h0 , h1 );
+            importance_float_t nv = ni >= eps ? ni / std::max( h0 , h1 )
+                : (H0 >= eps && H1 >= eps ? 0 : 1);
 
             importance_float_t var = nv - nmi ;
 
@@ -372,7 +373,7 @@ namespace gecmi {
         assert(nmi > -eps && "variances_at_prob(), nmi is invalid");
 #endif // DEBUG
         out_nmi_sqrt = unmi >= eps ? unmi / std::sqrt( H0 * H1 )  // Note: H0/1 should never be 0 if unmi != 0
-          : (H0 >= eps || H1 >= eps ? 0 : 1);
+          : (H0 >= eps && H1 >= eps ? 0 : 1);
     } // }}}
 
     importance_float_t total_events_from_unmi_cm(
