@@ -243,7 +243,7 @@ struct deep_complete_simulator::pimpl_t {
         {
             const auto& mods = pa1.get_status() == pa_status_t::SUCCESS
                 ? pa2.get_modules() : pa1.get_modules();
-#if DEBUG
+#ifdef DEBUG
             assert(mods.size() && "try_get_sample(), non-empty set should have positive size");
 #endif // DEBUG
             result.importance /= mods.size();

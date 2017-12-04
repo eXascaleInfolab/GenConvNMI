@@ -1,6 +1,6 @@
 # GenConvNMI
 Generalized Conventional Mutual Information (GenConvMI) - NMI for Overlapping clusters compatible with standard [NMI](http://www.cs.plu.edu/courses/csce436/art%202.pdf) value, pure C++ version producing a single executable.  
-GenConvMI applicable to evaluate both *overlapping (crisp and fuzzy) and multi-resolution clustering*: a single collection can contain all these mixed clusters (communities, modules) and be correctly evaluated, which is a unique feature.
+GenConvMI applicable to evaluate both *overlapping (crisp and fuzzy) and multi-resolution clustering*: a single collection can contain all these mixed clusters (communities, modules) and be correctly evaluated, which is a unique feature. Moreover, the evaluating collections may contain duplicated clusters, which is useful for the semantic types evaluation (when differently named types actually have the same members, i.e. equivalent types exist).
 
 The paper: [Comparing network covers using mutual information](https://arxiv.org/abs/1202.0425) by Alcides Viamontes Esquivel, Martin Rosval, 2012.  
 (c) Alcides Viamontes Esquivel
