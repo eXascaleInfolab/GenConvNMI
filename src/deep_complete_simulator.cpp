@@ -195,9 +195,9 @@ struct deep_complete_simulator::pimpl_t {
                     advance(ivt, (iv2 + used_vertex_index) % distance(iverts.first, iverts.second));
                     if(ivt->second == vertex && ++ivt == iverts.second)
                         ivt = iverts.first;
-#ifdef DEBUG
-                    assert(ivt->second != vertex && "try_get_sample(), ivt should not contain the origin");
-#endif // DEBUG
+//#ifdef DEBUG
+//                    assert(ivt->second != vertex && "try_get_sample(), ivt should not contain the origin");
+//#endif // DEBUG
                 }
             }
             vertex = ivt->second;  // Get the target vertex

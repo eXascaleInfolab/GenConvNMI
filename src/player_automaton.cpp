@@ -60,13 +60,13 @@ namespace gecmi {
             return pa_status_t::SUCCESS;
         } // }}}
 
-        size_t get_a_module() const
-        {
-#ifdef DEBUG
-            assert( rms.size() == 1 );
-#endif // DEBUG
-            return *rms.begin();
-        }
+//        size_t get_a_module() const
+//        {
+//#ifdef DEBUG
+//            assert( rms.size() == 1 );
+//#endif // DEBUG
+//            return *rms.begin();
+//        }
 
         const remaining_modules_set_t& get_modules() const
         {
@@ -106,10 +106,10 @@ namespace gecmi {
         return impl->get_status();
     }
 
-    size_t player_automaton::get_a_module() const
-    {
-        return impl->get_a_module();
-    }
+//    size_t player_automaton::get_a_module() const
+//    {
+//        return impl->get_a_module();
+//    }
 
     const remaining_modules_set_t& player_automaton::get_modules() const
     {

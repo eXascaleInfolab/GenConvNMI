@@ -43,10 +43,7 @@ namespace gecmi {
         // And finally put the numbers there... again,
         // easy enough
         for( auto int2size: cm.data() )
-        {
-            importance_float_t p = int2size.second / total_events ;
-            out_norm_conf.data()[ int2size.first ] = p ;
-        }
+            out_norm_conf.data()[ int2size.first ] = int2size.second / total_events;
 
         // Now time to populate the cols and rows vectors
         out_norm_cols.resize( cm.size2() );
@@ -54,6 +51,10 @@ namespace gecmi {
         out_norm_rows.resize( cm.size1() );
         out_norm_rows.clear();
         size_t col_count = cm.size2();
+#ifdef DEBUG
+//    #define SHOW_MTNORM
+//    puts(">> normalize_events(), normalized matrix: ");
+#endif // DEBUG
         for( auto int2p: out_norm_conf.data() )
         {
             importance_float_t p = int2p.second ;
@@ -61,6 +62,11 @@ namespace gecmi {
             // g = i*n+j
             size_t j = g % col_count;
             size_t i = g / col_count;
+#ifdef SHOW_MTNORM
+            printf(" %0.3G", p);
+            if(j == col_count - 1)
+                puts("");
+#endif // SHOW_MTNORM
             out_norm_cols(j) += p ;
             out_norm_rows(i) += p ;
         }
@@ -237,6 +243,10 @@ namespace gecmi {
                     norm_cols(j) * norm_rows(i)
                 )
             );
+#ifdef DEBUG
+            printf("> variances_at_prob(), ni: %G,  p: %G, zlvar: %G (ncv_%lu: %G, nrv_%lu: %G)\n"
+                , ni, p, zlog( p / (norm_cols(j) * norm_rows(i)) ), j, norm_cols(j), i, norm_rows(i));
+#endif // DEBUG
         }
 
 
@@ -266,10 +276,10 @@ namespace gecmi {
 
         importance_float_t unmi = ni;
         importance_float_t nmi = unmi >= eps ? unmi / std::max( H0 , H1 )
-          : (H0 >= eps && H1 >= eps ? 0 : 1);
+          : (H0 >= eps || H1 >= eps ? 0 : 1);
 
 #ifdef DEBUG
-        std::cerr << "variances_at_prob(), psum: "  << s << ", H0: " << H0 << ", H1: "
+        std::cerr << "> variances_at_prob(), psum: "  << s << ", H0: " << H0 << ", H1: "
             << H1 << ", unmi: " << unmi << ", nmi: " << nmi << std::endl;
         assert(ni > -eps && "variances_at_prob(), nmi is invalid");
         assert(H0 >= 0 && H1 >= 0 && "variances_at_prob(), H0 or H1 is invalid");
@@ -361,19 +371,24 @@ namespace gecmi {
             // Now ni contains the no-sum factor
             // Do the division
             importance_float_t nv = ni >= eps ? ni / std::max( h0 , h1 )
-                : (H0 >= eps && H1 >= eps ? 0 : 1);
+                : (H0 >= eps || H1 >= eps ? 0 : 1);
 
             importance_float_t var = nv - nmi ;
 
             s2 += var*var;
         }
         out_max_variance = std::sqrt( s2 );
+        // ATTENTION: for some cases, for example when one of the collections is a single cluster,
+        // NMI will always yield 0 for any clusters in the second collection, which is limitation
+        // of the original NMI measure. Similar issues possible in more complex configurations.
+        if(nmi < eps)
+            throw std::domain_error("ERROR: NMI is not applicable to the specified collections: 0, which says nothing about the similarity\n");
         out_nmi = nmi;
 #ifdef DEBUG
-        assert(nmi > -eps && "variances_at_prob(), nmi is invalid");
+        assert(nmi >= eps && nmi <= 1 + eps && "variances_at_prob(), nmi is invalid");
 #endif // DEBUG
         out_nmi_sqrt = unmi >= eps ? unmi / std::sqrt( H0 * H1 )  // Note: H0/1 should never be 0 if unmi != 0
-          : (H0 >= eps && H1 >= eps ? 0 : 1);
+          : (H0 >= eps || H1 >= eps ? 0 : 1);
     } // }}}
 
     importance_float_t total_events_from_unmi_cm(

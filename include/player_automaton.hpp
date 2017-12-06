@@ -45,7 +45,7 @@ public:
     // Called when a coin is tossed and the next operation is decided.
     pa_status_t::t get_status() const;
 
-    size_t get_a_module() const;
+//    size_t get_a_module() const;
 
     // Get all remaining modules
     const remaining_modules_set_t& get_modules() const;
