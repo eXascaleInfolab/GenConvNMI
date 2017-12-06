@@ -26,10 +26,10 @@ namespace gecmi {
         importance_float_t total_events=0
         );
 
-    void normalize_events_with_fails( counter_matrix_t const& cm,
-        importance_float_t const& fail_count,
-        importance_matrix_t& out_norm_conf
-        );
+//    void normalize_events_with_fails( counter_matrix_t const& cm,
+//        importance_float_t const& fail_count,
+//        importance_matrix_t& out_norm_conf
+//        );
 
     importance_float_t normalized_mi(
         importance_matrix_t const& norm_conf,

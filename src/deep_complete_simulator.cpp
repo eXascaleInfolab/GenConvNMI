@@ -26,7 +26,6 @@ struct deep_complete_simulator::pimpl_t {
     //   I need a random number generator that picks up a random vertex
     //   in the set of remaining vertices.
     //
-//    constexpr static size_t  RESULT_NONE = -1;
     static random_device rd;
     typedef std::mt19937 randgen_t;
     typedef std::mt19937::result_type  gen_seed_t;
@@ -74,29 +73,26 @@ struct deep_complete_simulator::pimpl_t {
 
     simulation_result_t get_sample()
     {
-//        simulation_result_t result(RESULT_NONE);
         simulation_result_t result;
         uint32_t attempt_count = 0;
-//        while ( result.first == RESULT_NONE )
+        uint32_t failed_attempts = 0;
         while(result.mods1.empty() || result.mods2.empty())
         {
             //cout << "-" << endl;
             try_get_sample( result );  // The most heavy function !!!
-//            if ( result.first == RESULT_NONE )
             if(result.mods1.empty() || result.mods2.empty())
-                ++result.failed_attempts;  // += result.importance;
+                ++failed_attempts;  // += result.importance;
             if ( ++attempt_count >= MAX_ACCEPTABLE_FAILURES ) {
                 result.mods1.clear();
                 result.mods2.clear();
-                //result.first = result.second = 0;
                 result.importance = 0;
                 break;
                 //throw std::domain_error("SystemIsSuspiciuslyFailingTooMuch dcs (maybe your partition is not solvable?)\n");
             }
         }
 
-        if(result.failed_attempts >= 1 && result.failed_attempts < MAX_ACCEPTABLE_FAILURES)
-            result.importance *= importance_float_t(attempt_count - result.failed_attempts) / attempt_count;
+        if(failed_attempts >= 1 && failed_attempts < MAX_ACCEPTABLE_FAILURES)
+            result.importance *= importance_float_t(attempt_count - failed_attempts) / attempt_count;
         // Note: typically the number of attempts is 1
         //if(attempt_count  > 1)
         ////    fprintf(stderr, "Attempts: %u\n", attempt_count);
@@ -187,25 +183,6 @@ struct deep_complete_simulator::pimpl_t {
                         break;
                     // Process standard case
                     const auto&  mtov2 = (v2first ? tworel.second : tworel.first).right;
-//                    std::vector<size_t>  v2mods;
-//                    for(auto v2mod: v2bms) {
-//                        auto iv2s = mtov2.equal_range(v2mod);
-//                        // Note: this is fine for the intersection, but not for the dif operation...
-//                        if(distance(iv2s.first, iv2s.second) == 1)
-//                            v2mods.push_back(v2mod);
-//                    }
-//                    // Select the result if any exist
-//                    if(!v2mods.empty()) {
-//                        auto v2mod = v2mods[(iv2 + used_vertex_index) % v2mods.size()];
-//                        if(v2first) {
-//                            result.first = *iv2mod;
-//                            result.second = v2mod;
-//                        } else {
-//                            result.first = v2mod;
-//                            result.second = *iv2mod;
-//                        }
-//                        return;
-//                    }
                     // The match was not found, take another vertex
                     iv2mod = v2bms.begin();
                     advance(iv2mod, iv2 % v2bms.size());
@@ -240,32 +217,8 @@ struct deep_complete_simulator::pimpl_t {
         );
         // Consider importance of the second vertex
         result.importance /= std::max<size_t>(sqrt(rm1.size() * rm2.size()), 1);  // The more common vertex the less it is important
-//        if(used_vertex_index >= 5)
-//            printf("%lu ", used_vertex_index);
         result.mods1.assign(pa1.get_modules().begin(), pa1.get_modules().end());
         result.mods2.assign(pa2.get_modules().begin(), pa2.get_modules().end());
-
-//        // Now, if we managed to finish
-//        if(pa1.get_status() != pa_status_t::EMPTY_SET && pa2.get_status() != pa_status_t::EMPTY_SET)
-//        {
-//            const auto& mods = pa1.get_status() == pa_status_t::SUCCESS
-//                ? pa2.get_modules() : pa1.get_modules();
-//#ifdef DEBUG
-//            assert(mods.size() && "try_get_sample(), non-empty set should have positive size");
-//#endif // DEBUG
-//            result.importance /= mods.size();
-//            const size_t  mdoffs = (ivetr ^ rd()) % mods.size();
-//            auto imd = mods.begin();
-//            if(pa1.get_status() == pa_status_t::SUCCESS) {
-//                result.first = pa1.get_a_module();
-//                advance(imd, mdoffs);
-//                result.second = *imd;
-//            } else {
-//                advance(imd, mdoffs);
-//                result.first = *imd;
-//                result.second = pa2.get_a_module();
-//            }
-//        } else result.first = result.second = RESULT_NONE;
 //        //fprintf(stderr, "> try_get_sample(): %lu, %lu (p: %G, failed: %G);  vertex: %lu, cls1: %lu, cls2: %lu\n"
 //        //    , result.first, result.second, result.importance, result.failed_attempts, vertex, rm1.size(), rm2.size());
     }

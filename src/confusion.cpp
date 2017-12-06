@@ -66,38 +66,38 @@ namespace gecmi {
         }
     } // }}}
 
-    // void normalize_events_with_fails( int_mat, out_double_mat ) {{{
-    //    The purpose of this function is just to assist on debugging, it is
-    //    not using for computing the results
-    void normalize_events_with_fails( counter_matrix_t const& cm,
-        importance_float_t const& fail_count,
-        importance_matrix_t& out_norm_conf
-        )
-    {
-        // First I need to calculate the total number of events
-        importance_float_t total_events = fail_count;
-        for( auto int2size: cm.data() )
-        {
-            total_events += int2size.second ;
-        }
-
-        //cout << "cm " << cm << endl;
-        //cout << "fail count " << fail_count << endl;
-        //cout << "total evs " << total_events << endl;
-        // That was easy... now I need to reallocate
-        // the matrix dimensions on the output
-        out_norm_conf.resize( cm.size1(), cm.size2() , false );
-        out_norm_conf.clear();
-
-        // And finally put the numbers there... again,
-        // easy enough
-        for( auto int2size: cm.data() )
-        {
-            importance_float_t p = int2size.second / total_events ;
-            out_norm_conf.data()[ int2size.first ] = p ;
-        }
-
-    } // }}}
+//    // void normalize_events_with_fails( int_mat, out_double_mat ) {{{
+//    //    The purpose of this function is just to assist on debugging, it is
+//    //    not using for computing the results
+//    void normalize_events_with_fails( counter_matrix_t const& cm,
+//        importance_float_t const& fail_count,
+//        importance_matrix_t& out_norm_conf
+//        )
+//    {
+//        // First I need to calculate the total number of events
+//        importance_float_t total_events = fail_count;
+//        for( auto int2size: cm.data() )
+//        {
+//            total_events += int2size.second ;
+//        }
+//
+//        //cout << "cm " << cm << endl;
+//        //cout << "fail count " << fail_count << endl;
+//        //cout << "total evs " << total_events << endl;
+//        // That was easy... now I need to reallocate
+//        // the matrix dimensions on the output
+//        out_norm_conf.resize( cm.size1(), cm.size2() , false );
+//        out_norm_conf.clear();
+//
+//        // And finally put the numbers there... again,
+//        // easy enough
+//        for( auto int2size: cm.data() )
+//        {
+//            importance_float_t p = int2size.second / total_events ;
+//            out_norm_conf.data()[ int2size.first ] = p ;
+//        }
+//
+//    } // }}}
 
     // importance_float_t zlog( importance_float_t x ) {{{
     importance_float_t zlog( importance_float_t x )

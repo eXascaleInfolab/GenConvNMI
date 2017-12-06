@@ -47,13 +47,7 @@ struct direct_worker {
             //
             simulation_result_t sr = dcs_u.get_sample();
 
-            //int m1 = static_cast<int>(sr.first) ;
-            //int m2 = static_cast<int>(sr.second);
-#ifdef DEBUG
-            assert(sr.mods1.size() && sr.mods2.size()
-                && "direct_worker::operator(), the resulting modules should exist");
-#endif // DEBUG
-            if(sr.mods1.empty() || sr.mods2.empty())
+            if(sr.importance <= 0 || sr.mods1.empty() || sr.mods2.empty())
                 continue;
             const importance_float_t prob = sr.importance / (sr.mods1.size() * sr.mods2.size());
             {

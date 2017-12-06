@@ -8,19 +8,12 @@
 namespace gecmi {
 
 struct simulation_result_t {
-    //size_t first;
-    //size_t second;
     importance_float_t importance;
-    importance_float_t failed_attempts;
     modules_t mods1;
     modules_t mods2;
 
-    simulation_result_t(//size_t first=0, size_t second=0,
-        importance_float_t importance=0,
-        importance_float_t failed_attempts=0
-    ): //first(first), second(second),
-        importance(importance), failed_attempts(failed_attempts),
-        mods1(), mods2()  {}
+    simulation_result_t(importance_float_t importance=0)
+    : importance(importance), mods1(), mods2()  {}
 };
 
 class deep_complete_simulator {
