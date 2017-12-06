@@ -29,6 +29,7 @@ typedef module_set_t  modules_set_t;
 typedef module_set_t  remaining_modules_set_t;
 
 typedef std::vector< size_t >  vertices_t;
+typedef std::vector< size_t >  modules_t;
 
 }  // gecmi
 

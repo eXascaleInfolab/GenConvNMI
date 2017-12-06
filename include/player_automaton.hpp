@@ -14,11 +14,11 @@ struct pa_status_t {
         GOING
     };
 
-    static bool going( pa_status_t::t s1, pa_status_t::t s2 )
-    {
-        return (s1 == GOING && s2 != EMPTY_SET)
-            || (s2 == GOING && s1 != EMPTY_SET);
-    }
+//    static bool going( pa_status_t::t s1, pa_status_t::t s2 )
+//    {
+//        return (s1 == GOING && s2 != EMPTY_SET)
+//            || (s2 == GOING && s1 != EMPTY_SET);
+//    }
 };
 
 // Represents the state information of a single player

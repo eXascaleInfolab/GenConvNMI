@@ -47,12 +47,20 @@ struct direct_worker {
             //
             simulation_result_t sr = dcs_u.get_sample();
 
-            int i1 = static_cast<int>(sr.first) ;
-            int i2 = static_cast<int>(sr.second);
-            importance_float_t prob = sr.importance;
+            //int m1 = static_cast<int>(sr.first) ;
+            //int m2 = static_cast<int>(sr.second);
+#ifdef DEBUG
+            assert(sr.mods1.size() && sr.mods2.size()
+                && "direct_worker::operator(), the resulting modules should exist");
+#endif // DEBUG
+            if(sr.mods1.empty() || sr.mods2.empty())
+                continue;
+            const importance_float_t prob = sr.importance / (sr.mods1.size() * sr.mods2.size());
             {
                 tbb::spin_mutex::scoped_lock l(*wait_for_matrix);
-                (*counter_mat_p)( i1, i2 ) += prob; //
+                for(auto m1: sr.mods1)
+                    for(auto m2: sr.mods2)
+                        (*counter_mat_p)(m1, m2) += prob;
             }
         }
     }

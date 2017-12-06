@@ -19,7 +19,7 @@ namespace gecmi {
         // void set_operation( bool intersect ){{{
         void set_operation_kind( bool intersect )
         {
-            operation_is_intersect = intersect ;
+            operation_is_intersect = intersect;
         } // }}}
 
         // void take_set( module_set_t const& mset ) {{{
