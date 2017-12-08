@@ -119,7 +119,10 @@ size_t read_clusters( istream& input, input_interface& inp_interf, const char* f
 					inp_interf.add_vertex_module(id, iline);
 				++members += cmbs.size();
 				cshs[ch].push_back(chash);
-			} else ++ndupcls;
+			} else {
+				++ndupcls;
+				--iline;  // Decrease clusters id to retain the solid range
+			}
 			chash.clear();
 			cmbs.clear();
 		}
@@ -132,13 +135,13 @@ size_t read_clusters( istream& input, input_interface& inp_interf, const char* f
     const size_t  ansnum = inp_interf.uniqlSize();;  // Evaluate the actual number of nodes, resulting value
 #ifdef DEBUG
 	fprintf(stderr, "> read_clusters(), expected & actual"
-		" nodes: (%lu, %lu), clusters: (%lu, %lu); nodes membership: %G\n"
+		" nodes: %lu -> %lu, clusters: %lu -> %lu; nodes membership: %G\n"
 		, ndsnum, ansnum, clsnum, iline, float(members) / ansnum);
 #endif // DEBUG
 	if(!estimated && ((clsnum && clsnum != iline) || (ndsnum && ndsnum != ansnum)))
 		fprintf(stderr, "WARNING read_clusters(),"
 			" The specified number of nodes/clusters does not correspond to the actual one"
-			"  nodes: (%lu, %lu), clusters: (%lu, %lu)\n"
+			"  nodes: %lu -> %lu, clusters: %lu -> %lu\n"
 			, ndsnum, ansnum, clsnum, iline);
 	if(ndupcls)
 		fprintf(stderr, "WARNING read_clusters(), %lu duplicated clusters omitted"

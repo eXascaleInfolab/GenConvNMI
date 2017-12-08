@@ -11,7 +11,7 @@ AR = ar
 LD = g++
 WINDRES = windres
 
-INC = -Iinclude -Ishared
+INC = -Iinclude -Ishared -Ishared_daoc
 CFLAGS = -Wnon-virtual-dtor -Wredundant-decls -Wcast-align -Wundef -Wunreachable-code -Wmissing-include-dirs -Weffc++ -Wzero-as-null-pointer-constant -std=c++14 -fexceptions -fstack-protector-strong -D_FORTIFY_SOURCE=2
 RESINC = 
 LIBDIR = 
