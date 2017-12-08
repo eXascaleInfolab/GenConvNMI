@@ -28,7 +28,8 @@ public:
 
 size_t read_clusters(std::istream& input,
     input_interface& inp_interf, const char* fname=nullptr,
-    IdMap* idmap=nullptr, float membership=1.f);  // Average expected membership
+    IdMap* idmap=nullptr, float membership=1.f,  // Average expected membership
+    bool fltdups=true);  // Filter out duplicates of clusters
 }  // gecmi
 
 #endif  // CLUSTER_READER__CLUSTER_READER_HPP_

@@ -101,14 +101,14 @@ calculated_info_t calculate_till_tolerance(
             avgdeg = 1 / degrt;
     }
     size_t  steps = steps_base * avgdeg * log2(acr) / -2;  // Note: *0.65 because anyway visrt is selected too large
-//    printf("# calculate_till_tolerance(), steps: %lu, reassigned marg: %G\n"
+//    printf("> calculate_till_tolerance(), steps: %lu, reassigned marg: %G\n"
 //        , steps, steps_base * 1.75f * avgdeg);
     if(steps < steps_base * 1.25f * avgdeg) {
         //assert(0 && "The number of steps is expected to be at least twice the number of vertices");
         steps = steps_base * 1.25f * avgdeg;
     }
 #ifdef DEBUG
-    printf("# calculate_till_tolerance(), vertices: %lu, steps: %lu (%G%%), navgdeg: %G\n"
+    printf("> calculate_till_tolerance(), vertices: %lu, steps: %lu (%G%%), navgdeg: %G\n"
         , vertices.size(), steps, steps * 100.f / vertices.size(), avgdeg);
 #endif  // DEBUG
 
@@ -121,7 +121,7 @@ calculated_info_t calculate_till_tolerance(
         sratio = 2 - 1 / sratio;
 #ifdef DEBUG
     const size_t  steps1 = sratio / 2 * steps;
-    fprintf(stderr, "# rows/cols: %G,  steps1: %lu, steps2: %lu,  sr: %G\n", double(rows) / cols
+    fprintf(stderr, "> calculate_till_tolerance(), rows/cols: %G,  steps1: %lu, steps2: %lu,  sr: %G\n", double(rows) / cols
         , steps - steps1, steps1, steps1 / double(steps - steps1));
     size_t  iterations = 0;
 #endif  // DEBUG
@@ -164,7 +164,7 @@ calculated_info_t calculate_till_tolerance(
 
             steps *= 1.25f;  // Use more steps on fail
 #ifdef DEBUG
-        fprintf(stderr, "# calculate_till_tolerance(), iteration completed  with %lu events"
+        fprintf(stderr, "> calculate_till_tolerance(), iteration completed  with %lu events"
             " and max_var: %G (epvar: %G), steps: %lu, nmi_max: %G, nmi_sqrt: %G\n"
             , uint64_t(total_events), max_var, epvar, steps, nmi, nmi_sqrt);
         ++iterations;
@@ -172,7 +172,7 @@ calculated_info_t calculate_till_tolerance(
     }
 
 #ifdef DEBUG
-    fprintf(stderr, "# calculate_till_tolerance(), completed after %lu iterations"
+    fprintf(stderr, "> calculate_till_tolerance(), completed after %lu iterations"
         ", max_var: %G, nmi_max: %G, nmi_sqrt: %G\n"
         , iterations, max_var, nmi, nmi_sqrt);
 #endif  // DEBUG

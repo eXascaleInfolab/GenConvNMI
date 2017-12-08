@@ -67,6 +67,7 @@
 			<Add option="-D_FORTIFY_SOURCE=2" />
 			<Add directory="include" />
 			<Add directory="shared" />
+			<Add directory="shared_daoc" />
 		</Compiler>
 		<Linker>
 			<Add library="boost_program_options" />
@@ -85,6 +86,7 @@
 		<Unit filename="include/representants.hpp" />
 		<Unit filename="include/vertex_module_maps.hpp" />
 		<Unit filename="shared/cnl_header_reader.hpp" />
+		<Unit filename="shared_daoc/coding.hpp" />
 		<Unit filename="src/calculate_till_tolerance.cpp" />
 		<Unit filename="src/cluster_reader.cpp" />
 		<Unit filename="src/confusion.cpp" />

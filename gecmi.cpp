@@ -51,10 +51,12 @@ int main(int argc, char* argv[])
             po::value<double>()->default_value(0.01),
             "admissible error" )
         ("fast,a", "apply fast approximate evaluations that are less accurate"
-            ", but much faster on large networks" )
+            ", but much faster on large networks")
         ("membership,m",
             po::value<float>()->default_value(1.f),
             "average expected membership of nodes in the clusters, > 0, typically >= 1")
+        ("retain-dups,d", "retain duplicated clusters if any instead of filtering them out"
+            " (not recommended)")
     ;
     po::variables_map vm;
     po::store( po::command_line_parser(argc, argv)
@@ -77,11 +79,11 @@ int main(int argc, char* argv[])
     if ( positionals.size() != 2 )
         throw invalid_argument("Please provide exactly two input files as input\n");
 
-    ifstream in1(positionals[0].c_str() );
+    ifstream in1(positionals[0].c_str());
     if( !in1 )
         throw std::system_error(errno, std::system_category(), "Could not open the first file\n");
 
-    ifstream in2(positionals[1].c_str() );
+    ifstream in2(positionals[1].c_str());
     if( !in2 )
         throw std::system_error(errno, std::system_category(), "Could not open the second file\n");
 
@@ -100,22 +102,29 @@ int main(int argc, char* argv[])
 
     {
         const bool remap = vm.count("id-remap");  // Remap ids
+        const bool fltdups = !vm.count("retain-dups");  // Filter out duplicated clusters
         IdMap idmap;  // Mapping of ids to provide solid range starting from 0 if required
 
+#ifdef DEBUG
+        fprintf(stderr, "Loading %s...\n", positionals[0].c_str());
+#endif  // DEBUG
         b1lnum = read_clusters(
             in1,
             bcp1,
             positionals[0].c_str(),
             remap ? &idmap : nullptr,
-            membership
+            membership, fltdups
         );
 
+#ifdef DEBUG
+        fprintf(stderr, "Loading %s...\n", positionals[1].c_str());
+#endif  // DEBUG
         b2lnum = read_clusters(
             in2,
             bcp2,
             positionals[1].c_str(),
             remap ? &idmap : nullptr,
-            membership
+            membership, fltdups
         );
     }
 

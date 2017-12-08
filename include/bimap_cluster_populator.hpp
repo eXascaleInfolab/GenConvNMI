@@ -56,7 +56,7 @@ public:
                     , vertices_num, e.what());
                 throw;
             }
-//        fprintf(stderr, "# Reserving. Nodes rehashed. Required %lu clusters, %lu nodes (%G buckets)"
+//        fprintf(stderr, ">> reserve_vertices_modules(), Reserving. Nodes rehashed. Required %lu clusters, %lu nodes (%G buckets)"
 //            ";  preallocated %G clusters (lf: %G), %G nodes (lf: %G)\n"
 //            , modules_num, vertices_num, vertices_num / vmb.left.max_load_factor() + 1
 //            , vmb.right.bucket_count() * vmb.right.max_load_factor()
@@ -72,7 +72,7 @@ public:
     {
         // Rehash the nodes decreasing the allocated space and number of buckets
         // for the faster iterating if required
-//        fprintf(stderr, "# Shrinking. Reserved %G clusters, %G nodes;  actual size is %lu clusters, %lu nodes\n"
+//        fprintf(stderr, ">> reserve_vertices_modules(), Shrinking. Reserved %G clusters, %G nodes;  actual size is %lu clusters, %lu nodes\n"
 //            , vmb.right.bucket_count() * vmb.right.max_load_factor()
 //            , vmb.left.bucket_count() * vmb.left.max_load_factor()
 //            , vmb.right.size(), vmb.left.size());
@@ -80,7 +80,7 @@ public:
             vmb.left.rehash(vmb.left.size() / vmb.left.max_load_factor() + 1);
         if(vmb.right.size() < vmb.right.bucket_count() * vmb.right.max_load_factor() * 0.8f)
             vmb.right.rehash(vmb.right.size() / vmb.right.max_load_factor() + 1);
-//        fprintf(stderr, "# Shrinking. Updated capacity is %G clusters, %G nodes\n"
+//        fprintf(stderr, ">> reserve_vertices_modules(), Shrinking. Updated capacity is %G clusters, %G nodes\n"
 //            , vmb.right.bucket_count() * vmb.right.max_load_factor()
 //            , vmb.left.bucket_count() * vmb.left.max_load_factor());
     }

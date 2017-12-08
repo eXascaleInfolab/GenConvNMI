@@ -274,9 +274,10 @@ namespace gecmi {
             s += p;
         }
 
+        const importance_float_t  aggEps = std::max(norm_cols.size(), norm_rows.size()) * eps;
         importance_float_t unmi = ni;
         importance_float_t nmi = unmi >= eps ? unmi / std::max( H0 , H1 )
-          : (H0 >= eps || H1 >= eps ? 0 : 1);
+          : (H0 >= aggEps || H1 >= aggEps ? 0 : 1);
 
 #ifdef DEBUG
         std::cerr << "> variances_at_prob(), psum: "  << s << ", H0: " << H0 << ", H1: "
@@ -371,7 +372,7 @@ namespace gecmi {
             // Now ni contains the no-sum factor
             // Do the division
             importance_float_t nv = ni >= eps ? ni / std::max( h0 , h1 )
-                : (H0 >= eps || H1 >= eps ? 0 : 1);
+                : (H0 >= aggEps || H1 >= aggEps ? 0 : 1);
 
             importance_float_t var = nv - nmi ;
 
@@ -381,14 +382,14 @@ namespace gecmi {
         // ATTENTION: for some cases, for example when one of the collections is a single cluster,
         // NMI will always yield 0 for any clusters in the second collection, which is limitation
         // of the original NMI measure. Similar issues possible in more complex configurations.
-        if(nmi < eps)
-            throw std::domain_error("ERROR: NMI is not applicable to the specified collections: 0, which says nothing about the similarity\n");
+        if(nmi <= 0)
+            throw std::domain_error("NMI is not applicable to the specified collections: 0, which says nothing about the similarity\n");
         out_nmi = nmi;
 #ifdef DEBUG
-        assert(nmi >= eps && nmi <= 1 + eps && "variances_at_prob(), nmi is invalid");
+        assert(nmi > 0 && nmi <= 1 + eps && "variances_at_prob(), nmi is invalid");
 #endif // DEBUG
         out_nmi_sqrt = unmi >= eps ? unmi / std::sqrt( H0 * H1 )  // Note: H0/1 should never be 0 if unmi != 0
-          : (H0 >= eps || H1 >= eps ? 0 : 1);
+          : (H0 >= aggEps || H1 >= aggEps ? 0 : 1);
     } // }}}
 
     importance_float_t total_events_from_unmi_cm(
