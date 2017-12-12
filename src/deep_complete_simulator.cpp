@@ -80,14 +80,19 @@ struct deep_complete_simulator::pimpl_t {
         {
             //cout << "-" << endl;
             try_get_sample( result );  // The most heavy function !!!
-            if(result.mods1.empty() || result.mods2.empty())
+            // Note: exact match provides more accurate results than approximate fuzzy match
+            // and additionally ~ satisfies usecase 1lev4nds
+            if(result.mods1.size() != 1 || result.mods2.size() != 1)
+            //if(result.mods1.empty() || result.mods2.empty())
                 ++failed_attempts;  // += result.importance;
             if ( ++attempt_count >= MAX_ACCEPTABLE_FAILURES ) {
+                // Note: it's better to yield approximate results than absence of any results at all
+                //throw std::domain_error("SystemIsSuspiciuslyFailingTooMuch dcs (maybe your partition is not solvable?)\n");
+                fprintf(stderr, "WARNING get_sample(), the partition is not solvable, results are approximate");
                 result.mods1.clear();
                 result.mods2.clear();
                 result.importance = 0;
                 break;
-                //throw std::domain_error("SystemIsSuspiciuslyFailingTooMuch dcs (maybe your partition is not solvable?)\n");
             }
         }
 
@@ -124,7 +129,9 @@ struct deep_complete_simulator::pimpl_t {
         }
 
         // The number of attempts to get modules
-        const size_t  attempts = (rm1.size() + rm2.size()) * 2;
+        // Note: full traversing includes all unique vertices in all rm1 and rm2 modules,
+        // but with confidence ~ 0.07: 15 attempts * modules size is enough
+        const size_t  attempts = (rm1.size() + rm2.size()) * 15;
         result.importance /= std::max<size_t>(sqrt(rm1.size() * rm2.size()), 1);  // The more common vertex the less it is important
 
         // The automatons that track the state
@@ -139,7 +146,11 @@ struct deep_complete_simulator::pimpl_t {
 
         // Now is just to draw one by one...if at any moment
         // the system is stuck, try something else...
-        do {
+        // Note: the projected modules can be only reduced and never grow over the iterations
+        while(pa_status_t::going(pa1.get_status(), pa2.get_status())
+            //&& used_vertex_index <= verts.size()
+            && ++used_vertex_index <= attempts
+        ) {
             // Parameters for the second vertex
             static_assert(std::is_integral<decltype(rd())>::value && std::is_unsigned<decltype(rd())>::value
                 , "try_get_sample(), rd() value has unexpected type\n");
@@ -155,6 +166,9 @@ struct deep_complete_simulator::pimpl_t {
                 v2first = !v2first;
             }
 #ifdef DEBUG
+            if(v2bms.empty())
+                fprintf(stderr, "try_get_sample(), rm1: %lu, rm2: %lu, uvi: %lu\n"
+                    , rm1.size(), rm2.size(), used_vertex_index);
             assert(!v2bms.empty() && "try_get_sample(), both selected module sets shouldn't be empty");
 #endif // DEBUG
             // Select module (cluster) from which v2 will be selected
@@ -170,39 +184,21 @@ struct deep_complete_simulator::pimpl_t {
             auto ivt = iverts.first;
             advance(ivt, (iv2 + used_vertex_index) % distance(iverts.first, iverts.second));
             // Do not take the same vertex
+            if(ivt->second == vertex && ++ivt == iverts.second)
+                ivt = iverts.first;
+            // Consider the case of single vertex module(s), which is a RARE case
             if(ivt->second == vertex) {
-                if(++ivt == iverts.second)
-                    ivt = iverts.first;
-                // Check whether it was a single-vertex module
-                if(ivt->second == vertex) {
-                    // Single-node module occurred, find it's complement if possible
-                    // in the remained modules set
-                    v2bms = move(v2first ? rm2 : rm1);
-                    // Consider special case
-                    if(v2bms.empty())  // Might occur only in case the node base is not synced
-                        break;
-                    // Process standard case
-                    const auto&  mtov2 = (v2first ? tworel.second : tworel.first).right;
-                    // The match was not found, take another vertex
-                    iv2mod = v2bms.begin();
-                    advance(iv2mod, iv2 % v2bms.size());
-                    iverts = mtov2.equal_range(*iv2mod);
-#ifdef DEBUG
-                    assert(iverts.first != iverts.second && iverts.first->first == *iv2mod
-                        && "try_get_sample() 2, the module must have back relation to the vertex");
-#endif // DEBUG
-                    ivt = iverts.first;
-                    advance(ivt, (iv2 + used_vertex_index) % distance(iverts.first, iverts.second));
-                    if(ivt->second == vertex && ++ivt == iverts.second)
-                        ivt = iverts.first;
-//#ifdef DEBUG
-//                    assert(ivt->second != vertex && "try_get_sample(), ivt should not contain the origin");
-//#endif // DEBUG
-                }
+                // Recover moved rm module(s)
+                rm1 = pa1.get_modules();
+                rm2 = pa2.get_modules();
+                continue;
             }
             vertex = ivt->second;  // Get the target vertex
 
             get_modules( vertex, rm1, rm2 );
+            // Consider early exit for the exact match
+            if(rm1.size() == 1 && rm2.size() == 1)
+                break;
             // Now get the operation
             // Note: lindis(rndgen) gives better quality faster than rd()
             bool do_intersection = (iv2 + used_vertex_index) % 2;  // (used_vertex_index + initial_iv2) % 2;  lindis(rndgen) % 2, used_vertex_index % 2
@@ -210,11 +206,7 @@ struct deep_complete_simulator::pimpl_t {
             pa2.set_operation_kind( do_intersection );
             pa1.take_set( rm1 );
             pa2.take_set( rm2 );
-        } while((pa1.get_status() == pa_status_t::EMPTY_SET || pa2.get_status() == pa_status_t::EMPTY_SET)
-            //pa_status_t::going( pa1.get_status(), pa2.get_status() )
-            //&& used_vertex_index < verts.size()
-            && used_vertex_index++ < attempts
-        );
+        }
         // Consider importance of the second vertex
         result.importance /= std::max<size_t>(sqrt(rm1.size() * rm2.size()), 1);  // The more common vertex the less it is important
         result.mods1.assign(pa1.get_modules().begin(), pa1.get_modules().end());

@@ -1,3 +1,6 @@
+# Cutom rules
+/shared_daoc/
+
 # Compiled Object files
 *.slo
 *.lo

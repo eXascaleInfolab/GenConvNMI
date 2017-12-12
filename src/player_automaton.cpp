@@ -25,8 +25,7 @@ namespace gecmi {
         // void take_set( module_set_t const& mset ) {{{
         void take_set( module_set_t const& mset )
         {
-            if ( rms.size() >= 2 )
-            {
+            if (rms.size() >= 2 && rms != mset) {
                 remaining_modules_set_t new_rms;
                 // Do the operation
                 if ( operation_is_intersect )
@@ -42,7 +41,8 @@ namespace gecmi {
                 //    , mset.size(), rms.size(), new_rms.size());
 
                 // Accept the operation only if it doesn't gets to a zero state
-                if ( !new_rms.empty() )
+                // ATTENTION: the resulting set can be empty rms was a subset of mset
+                if (!new_rms.empty())
                 	rms = move(new_rms);
             }
             // Else do nothing
