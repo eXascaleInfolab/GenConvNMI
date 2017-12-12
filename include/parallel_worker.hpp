@@ -40,6 +40,7 @@ struct direct_worker {
 
     void operator()( const tbb::blocked_range<size_t>& r ) const
     {
+        size_t  unmatched = 0;  // The number of unmatched clusters (not solvable)
         for( size_t i=r.begin(); i != r.end(); ++i )
         {
             // Pure and safe memory access to (almost) unrelated
@@ -47,8 +48,13 @@ struct direct_worker {
             //
             simulation_result_t sr = dcs_u.get_sample();
 
-            if(sr.importance <= 0 || sr.mods1.empty() || sr.mods2.empty())
+#ifdef DEBUG
+            assert(sr.importance >= 0 && "blocked_range(), the importance should be non-negative");
+#endif // DEBUG
+            if(sr.importance <= 0 || sr.mods1.empty() || sr.mods2.empty()) {
+                unmatched += 1;
                 continue;
+            }
             const importance_float_t prob = sr.importance / (sr.mods1.size() * sr.mods2.size());
             {
                 tbb::spin_mutex::scoped_lock l(*wait_for_matrix);
@@ -57,6 +63,11 @@ struct direct_worker {
                         (*counter_mat_p)(m1, m2) += prob;
             }
         }
+
+        // Notify about the unmatched clusters
+        if(unmatched >= 1)
+            fprintf(stderr, "WARNING direct_worker, %lu unmatched (not solvable) clusters met on the collections comparison"
+                " (a single cluster could be accounted multiple times)\n", unmatched);
     }
 };
 

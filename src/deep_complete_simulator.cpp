@@ -80,10 +80,11 @@ struct deep_complete_simulator::pimpl_t {
         {
             //cout << "-" << endl;
             try_get_sample( result );  // The most heavy function !!!
-            // Note: exact match provides more accurate results than approximate fuzzy match
-            // and additionally ~ satisfies usecase 1lev4nds
-            if(result.mods1.size() != 1 || result.mods2.size() != 1)
-            //if(result.mods1.empty() || result.mods2.empty())
+            //// Note: exact match provides more accurate results than approximate fuzzy match
+            //// and additionally ~ satisfies usecase 1lev4nds
+            //// !!! After the proper normalization (importance) the results for hard and soft match are approximately the same !!!
+            //if(result.mods1.size() != 1 || result.mods2.size() != 1)
+            if(result.mods1.empty() || result.mods2.empty())
                 ++failed_attempts;  // += result.importance;
             if ( ++attempt_count >= MAX_ACCEPTABLE_FAILURES ) {
                 // Note: it's better to yield approximate results than absence of any results at all
@@ -109,7 +110,6 @@ struct deep_complete_simulator::pimpl_t {
     //    This is indeed a huge method.
     void try_get_sample(simulation_result_t& result)  // The most heavy function !!!
     {
-        result.importance = 1.0;  // Probability E [0, 1]
         // Get the sets of modules (from 2 clusterings/partitions) for the first vertex
         // Note: verts is array of indices
         size_t ivetr;
@@ -130,19 +130,18 @@ struct deep_complete_simulator::pimpl_t {
 
         // The number of attempts to get modules
         // Note: full traversing includes all unique vertices in all rm1 and rm2 modules,
-        // but with confidence ~ 0.07: 15 attempts * modules size is enough
-        const size_t  attempts = (rm1.size() + rm2.size()) * 15;
-        result.importance /= std::max<size_t>(sqrt(rm1.size() * rm2.size()), 1);  // The more common vertex the less it is important
-
+        // but with confidence ~ (1 - 0.032): 31 attempts * modules size is enough
+        const size_t  attempts = (rm1.size() + rm2.size()) * 31;
         // The automatons that track the state
         //player_automaton pa1(move(rm1)), pa2(move(rm2));
         player_automaton pa1(rm1), pa2(rm2);
-
         // So, when we have to calculate the probability
         // even on the case that pa1 and pa2 be already
         // set to "ready", I will report the correct
         // weight...
         size_t used_vertex_index = 1;
+        // The more common vertex the less it is important. Probability E [0, 1]
+        importance_float_t  importance = 1.0 / std::max<size_t>(sqrt(rm1.size() * rm2.size()), 1);
 
         // Now is just to draw one by one...if at any moment
         // the system is stuck, try something else...
@@ -197,8 +196,12 @@ struct deep_complete_simulator::pimpl_t {
 
             get_modules( vertex, rm1, rm2 );
             // Consider early exit for the exact match
-            if(rm1.size() == 1 && rm2.size() == 1)
-                break;
+            if(rm1.size() == 1 && rm2.size() == 1) {
+                result.importance = 1;  // Exact match
+                result.mods1.assign(rm1.begin(), rm1.end());
+                result.mods2.assign(rm2.begin(), rm2.end());
+                return;
+            }
             // Now get the operation
             // Note: lindis(rndgen) gives better quality faster than rd()
             bool do_intersection = (iv2 + used_vertex_index) % 2;  // (used_vertex_index + initial_iv2) % 2;  lindis(rndgen) % 2, used_vertex_index % 2
@@ -206,9 +209,11 @@ struct deep_complete_simulator::pimpl_t {
             pa2.set_operation_kind( do_intersection );
             pa1.take_set( rm1 );
             pa2.take_set( rm2 );
+            importance += 1.0 / std::max<size_t>(sqrt(rm1.size() * rm2.size()), 1);  // The more common vertex the less it is important
         }
-        // Consider importance of the second vertex
-        result.importance /= std::max<size_t>(sqrt(rm1.size() * rm2.size()), 1);  // The more common vertex the less it is important
+        if(importance <= 1)
+            result.importance = importance;  // The more common vertex the less it is important
+        else result.importance = 1;  // There were large enough number of sampled vertices in these modules
         result.mods1.assign(pa1.get_modules().begin(), pa1.get_modules().end());
         result.mods2.assign(pa2.get_modules().begin(), pa2.get_modules().end());
 //        //fprintf(stderr, "> try_get_sample(): %lu, %lu (p: %G, failed: %G);  vertex: %lu, cls1: %lu, cls2: %lu\n"
