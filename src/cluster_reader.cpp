@@ -14,6 +14,7 @@ using std::stoul;
 using std::vector;
 using std::unordered_map;
 
+// Note: unordered_map<size_t>, where size_t is std::hash may cause omission of distinct clusters having the same hash
 using ClusterHash = daoc::AggHash<>;
 using ClusterHashes = vector<ClusterHash>;  // The same size_t (ClusterHash::hash) can be yielded for distinct ClusterHash
 // Note: unordered_map should have keys of size_t, but distinct AggHash
