@@ -25,7 +25,7 @@ using ClustersHashes = unordered_map<ClusterHash::IdT, ClusterHashes>;
 
 // size_t read_clusters( istream& input, input_interface& ) {{{
 size_t read_clusters( istream& input, input_interface& inp_interf, const char* fname,
-	IdMap* idmap, float membership, bool fltdups)
+	IdMap* idmap, float membership, bool fltdups, size_t* nmods)
 {
     // Note: CNL [CSN] format only is supported
 	string  line;
@@ -146,6 +146,9 @@ size_t read_clusters( istream& input, input_interface& inp_interf, const char* f
 	if(ndupcls)
 		fprintf(stderr, "WARNING read_clusters(), %lu duplicated clusters omitted"
 			" from the input file\n", ndupcls);
+	// Output the number of loaded UNIQUE modules
+	if(nmods)
+		*nmods = iline;
 
 	return ansnum;
 } // Reader function }}}

@@ -15,6 +15,8 @@ using std::cout;
 using std::ifstream;
 using std::to_string;
 using std::invalid_argument;
+using std::domain_error;
+using std::system_error;
 namespace po = boost::program_options;
 using namespace gecmi;
 
@@ -81,11 +83,11 @@ int main(int argc, char* argv[])
 
     ifstream in1(positionals[0].c_str());
     if( !in1 )
-        throw std::system_error(errno, std::system_category(), "Could not open the first file\n");
+        throw system_error(errno, std::system_category(), "Could not open the first file\n");
 
     ifstream in2(positionals[1].c_str());
     if( !in2 )
-        throw std::system_error(errno, std::system_category(), "Could not open the second file\n");
+        throw system_error(errno, std::system_category(), "Could not open the second file\n");
 
 
     // Read the clusters
@@ -104,6 +106,8 @@ int main(int argc, char* argv[])
         const bool remap = vm.count("id-remap");  // Remap ids
         const bool fltdups = !vm.count("retain-dups");  // Filter out duplicated clusters
         IdMap idmap;  // Mapping of ids to provide solid range starting from 0 if required
+        size_t  nmods1 = 0;  // The number of UNIQUE clusters (modules) in the first collection
+        size_t  nmods2 = 0;
 
 #ifdef DEBUG
         fprintf(stderr, "Loading %s...\n", positionals[0].c_str());
@@ -113,7 +117,7 @@ int main(int argc, char* argv[])
             bcp1,
             positionals[0].c_str(),
             remap ? &idmap : nullptr,
-            membership, fltdups
+            membership, fltdups, &nmods1
         );
 
 #ifdef DEBUG
@@ -124,14 +128,18 @@ int main(int argc, char* argv[])
             bcp2,
             positionals[1].c_str(),
             remap ? &idmap : nullptr,
-            membership, fltdups
+            membership, fltdups, &nmods2
         );
-    }
 
+        // Consider the case of single cluster collections, where NMI is not applicable
+        if(nmods1 != nmods2 && (nmods1 == 1 || nmods2 == 1))
+            throw domain_error("ERROR, NMI is not applicable for the single cluster collections\n");
+    }
 #ifdef DEBUG
         assert(b1lnum == bcp1.uniqlSize() && b2lnum == bcp2.uniqlSize()
             && "");
 #endif // DEBUG
+
     if(b1lnum != b2lnum) {
         const bool  sync = vm.count("sync");
         fprintf(stderr, "WARNING, evaluating collections have different number of nodes: %lu != %lu"
@@ -149,7 +157,7 @@ int main(int argc, char* argv[])
 
             // Throw the exception if the synchronization is failed
             if(b1lnum != b2lnum)
-                throw std::domain_error("Input collections have different node base and can't be synchronized gracefully: "
+                throw domain_error("Input collections have different node base and can't be synchronized gracefully: "
                     + to_string(b1lnum) + " != " + to_string(b2lnum)+ "\n");
         }
     }
