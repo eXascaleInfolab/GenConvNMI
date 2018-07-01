@@ -112,6 +112,7 @@ public:
                     = vmb.left.erase(ind, vmb.left.equal_range(ind->first).second);
             } else ++const_cast<typename decltype(vmb.left)::iterator&>(ind);
         }
+        shrink_to_fit_modules();
     }
 }; // bimap_cluster_populator
 

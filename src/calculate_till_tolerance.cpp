@@ -12,7 +12,7 @@
 // Grain: 1024 .. 2048;  1536 is ~ the best on both middle-size and large networks
 // on the working laptop (4 cores Intel(R) Core(TM) i7-4600U CPU @ 2.10GHz-3.3 GHz)
 // Checked in the range 128 .. 8192
-// Note: it has not significant dependence on the taks complexity: the same value is
+// Note: it has not significant dependence on the tasks complexity: the same value is
 // optimal using vector instantiation and shuffling
 constexpr size_t  EVCOUNT_GRAIN = 1536;
 
