@@ -5,7 +5,7 @@
 #include "cnl_header_reader.hpp"
 #include "cluster_reader.hpp"
 #include "vertex_module_maps.hpp"
-#include "coding.hpp"
+#include "agghash.hpp"
 
 
 namespace gecmi {

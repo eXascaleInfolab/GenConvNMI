@@ -86,7 +86,7 @@
 		<Unit filename="include/representants.hpp" />
 		<Unit filename="include/vertex_module_maps.hpp" />
 		<Unit filename="shared/cnl_header_reader.hpp" />
-		<Unit filename="shared_daoc/coding.hpp" />
+		<Unit filename="shared_daoc/agghash.hpp" />
 		<Unit filename="src/calculate_till_tolerance.cpp" />
 		<Unit filename="src/cluster_reader.cpp" />
 		<Unit filename="src/confusion.cpp" />
