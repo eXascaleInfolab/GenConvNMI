@@ -40,8 +40,8 @@ int main(int argc, char* argv[])
         ("input",
             po::value<vector<string> >()->composing(),
             "name of the input files" )
-        ("sync,s", "synchronize the node base, for example to fairly evaluate against"
-            " top K selected clusters that are subset of the original nodes")
+        ("sync,s", "synchronize the node base omitting the non-matching nodes for the fair evaluation."
+			" The node base is selected automatically as a clustering having the least number of nodes.")
         ("id-remap,i", "remap ids allowing arbitrary input ids (non-contiguous ranges)"
             ", otherwise ids should form a solid range and start from 0 or 1")
         ("nmis,n", "output both NMI [max] and NMI_sqrt")
