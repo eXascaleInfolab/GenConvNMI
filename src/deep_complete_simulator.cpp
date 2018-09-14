@@ -27,6 +27,8 @@ struct deep_complete_simulator::pimpl_t {
     //   in the set of remaining vertices.
     //
     static random_device rd;
+    static size_t invdrisk;  // Inverted doubled risk (probability the value being outside)
+
     typedef std::mt19937 randgen_t;
     typedef std::mt19937::result_type  gen_seed_t;
     typedef std::uniform_int_distribution<uint32_t>  linear_distrib_t;
@@ -130,8 +132,8 @@ struct deep_complete_simulator::pimpl_t {
 
         // The number of attempts to get modules
         // Note: full traversing includes all unique vertices in all rm1 and rm2 modules,
-        // but with confidence ~ (1 - 0.032): 31 attempts * modules size is enough
-        const size_t  attempts = (rm1.size() + rm2.size()) * 31;
+        // but with confidence ~ (1 - 0.032 / 2): 31 attempts * modules size is enough
+        const size_t  attempts = (rm1.size() + rm2.size()) * invdrisk; // 31; /(risk*2)
         // The automatons that track the state
         //player_automaton pa1(move(rm1)), pa2(move(rm2));
         player_automaton pa1(rm1), pa2(rm2);
@@ -223,6 +225,17 @@ struct deep_complete_simulator::pimpl_t {
 }; // pimpl_t
 
 random_device deep_complete_simulator::pimpl_t::rd;
+size_t deep_complete_simulator::pimpl_t::invdrisk = 1 / (0.01 * 2);  // Note: the actual value set later E (0. 1]
+
+void deep_complete_simulator::risk(double r)
+{
+    assert(r > 0 && r <= 1 && "risk(), The risk value is out of range");
+    if(r > 0)
+        pimpl_t::invdrisk = 1. / (r * 2);
+    else pimpl_t::invdrisk = -1;  // Max value of the unsigned
+}
+
+double deep_complete_simulator::risk() noexcept  { return 1. / (pimpl_t::invdrisk * 2); }
 
 // Required for initialization
 deep_complete_simulator::deep_complete_simulator( two_relations_ref vmb, vertices_t& verts )
@@ -237,12 +250,12 @@ deep_complete_simulator::~deep_complete_simulator()
     }
 }
 
-size_t deep_complete_simulator::vertices_num() const
+size_t deep_complete_simulator::vertices_num() const noexcept
 {
     return impl ? impl->verts.size() : 0;
 }
 
-auto deep_complete_simulator::operator= (deep_complete_simulator&& dcs) -> deep_complete_simulator&
+auto deep_complete_simulator::operator= (deep_complete_simulator&& dcs) noexcept -> deep_complete_simulator&
 {
     if(impl)
         delete impl;

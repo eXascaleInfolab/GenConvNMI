@@ -15,6 +15,7 @@
 // Note: it has not significant dependence on the tasks complexity: the same value is
 // optimal using vector instantiation and shuffling
 constexpr size_t  EVCOUNT_GRAIN = 1536;
+constexpr double  STEPS_BOOST_RATIO = (1 + sqrt(5)) / 2;  // Golden ratio, ~= 1.618034
 
 namespace gecmi {
 
@@ -31,6 +32,8 @@ calculated_info_t calculate_till_tolerance(
     )
 {
     assert(risk > 0 && risk < 1 && epvar > 0 && epvar < 1 && "risk and epvar should E (0, 1)");
+
+    deep_complete_simulator::risk(risk);
 
     importance_matrix_t norm_conf;
     importance_vector_t norm_cols;
@@ -163,7 +166,7 @@ calculated_info_t calculate_till_tolerance(
             nmi, nmi_sqrt
             );
 
-            steps *= 1.25f;  // Use more steps on fail
+            steps *= STEPS_BOOST_RATIO;  // 1.618; 1.25f;  // Use more steps on fail
 #ifdef DEBUG
         fprintf(stderr, "> calculate_till_tolerance(), iteration completed  with %lu events"
             " and max_var: %G (epvar: %G), steps: %lu, nmi_max: %G, nmi_sqrt: %G\n"

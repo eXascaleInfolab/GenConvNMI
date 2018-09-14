@@ -20,6 +20,10 @@ class deep_complete_simulator {
     struct pimpl_t;
     pimpl_t* impl;
 public:
+    // Probability of value being outside the specified error, 1-confidence
+    static void risk(double r);
+    static double risk() noexcept;
+
     // Required for initialization
     deep_complete_simulator(two_relations_ref vmb, vertices_t& verts);
 
@@ -27,7 +31,7 @@ public:
     ~deep_complete_simulator();
 
     deep_complete_simulator(deep_complete_simulator&& dcs) = default;
-    deep_complete_simulator& operator= (deep_complete_simulator&&);
+    deep_complete_simulator& operator= (deep_complete_simulator&&) noexcept;
 
     // Forbid copying
     deep_complete_simulator( deep_complete_simulator const& ) = delete;
@@ -41,7 +45,7 @@ public:
     // variable. The two numbers represent modules.
     simulation_result_t get_sample() const;
 
-    size_t vertices_num() const;
+    size_t vertices_num() const noexcept;
 };
 
 }  // gecmi
