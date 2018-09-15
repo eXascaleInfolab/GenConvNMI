@@ -107,9 +107,9 @@ calculated_info_t calculate_till_tolerance(
     size_t  steps = steps_base * avgdeg * log2(acr) / -2;  // Note: *0.65 because anyway visrt is selected too large
 //    printf("> calculate_till_tolerance(), steps: %lu, reassigned marg: %G\n"
 //        , steps, steps_base * 1.75f * avgdeg);
-    if(steps < steps_base * 1.25f * avgdeg) {
+    if(steps < steps_base * STEPS_BOOST_RATIO * avgdeg) {
         //assert(0 && "The number of steps is expected to be at least twice the number of vertices");
-        steps = steps_base * 1.25f * avgdeg;
+        steps = steps_base * STEPS_BOOST_RATIO * avgdeg;
     }
 #ifdef DEBUG
     printf("> calculate_till_tolerance(), vertices: %lu, steps: %lu (%G%%), navgdeg: %G\n"

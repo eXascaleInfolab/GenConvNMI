@@ -144,6 +144,8 @@ struct deep_complete_simulator::pimpl_t {
         size_t used_vertex_index = 1;
         // The more common vertex the less it is important. Probability E [0, 1]
         importance_float_t  importance = 1.0 / std::max<size_t>(sqrt(rm1.size() * rm2.size()), 1);
+        //const size_t  totmbs = two_rel.first.left.size() + two_rel.second.left.size();
+        //importance_float_t  importance = std::max<size_t>(sqrt(rm1.size() * rm2.size()), 1) / totmbs;
 
         // Now is just to draw one by one...if at any moment
         // the system is stuck, try something else...
@@ -199,7 +201,8 @@ struct deep_complete_simulator::pimpl_t {
             get_modules( vertex, rm1, rm2 );
             // Consider early exit for the exact match
             if(rm1.size() == 1 && rm2.size() == 1) {
-                result.importance = 1;  // Exact match
+                //result.importance = 1;  // Exact match
+                result.importance = (importance + 1.0) / used_vertex_index;  // 1; Exact match
                 result.mods1.assign(rm1.begin(), rm1.end());
                 result.mods2.assign(rm2.begin(), rm2.end());
                 return;
@@ -209,13 +212,16 @@ struct deep_complete_simulator::pimpl_t {
             bool do_intersection = (iv2 + used_vertex_index) % 2;  // (used_vertex_index + initial_iv2) % 2;  lindis(rndgen) % 2, used_vertex_index % 2
             pa1.set_operation_kind( do_intersection );
             pa2.set_operation_kind( do_intersection );
+            importance += 1.0 / std::max<size_t>(sqrt(rm1.size() * rm2.size()), 1);  // The more common vertex the less it is important
             pa1.take_set( rm1 );
             pa2.take_set( rm2 );
-            importance += 1.0 / std::max<size_t>(sqrt(rm1.size() * rm2.size()), 1);  // The more common vertex the less it is important
         }
-        if(importance <= 1)
-            result.importance = importance;  // The more common vertex the less it is important
-        else result.importance = 1;  // There were large enough number of sampled vertices in these modules
+        // Note: fixed importance = 1 gives very similar results to the importance inverse proportional to the vertex membership
+        //result.importance = 1;
+        result.importance = importance / used_vertex_index;
+//        if(importance <= 2)  // Up to 1 from 1 fixed and 1+ attempting vertices
+//            result.importance = importance / 2;  // The more common vertex the less it is important
+//        else result.importance = 1;  // There were large enough number of sampled vertices in these modules
         result.mods1.assign(pa1.get_modules().begin(), pa1.get_modules().end());
         result.mods2.assign(pa2.get_modules().begin(), pa2.get_modules().end());
 //        //fprintf(stderr, "> try_get_sample(): %lu, %lu (p: %G, failed: %G);  vertex: %lu, cls1: %lu, cls2: %lu\n"
