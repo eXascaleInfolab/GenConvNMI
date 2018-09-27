@@ -171,7 +171,7 @@ int main(int argc, char* argv[])
                 //throw domain_error("Input collections have different node base and can't be synchronized gracefully: "
                 //    + to_string(b1lnum) + " != " + to_string(b2lnum)+ "\n");
                 fprintf(stderr, "WARNING, full synchronization failed, the nodes in the collections differ"
-                " after the partial synchronization: %lu != %lu\n", b1lnum, b2lnum);
+                    " after the partial synchronization: %lu != %lu\n", b1lnum, b2lnum);
             }
         }
     }
