@@ -38,10 +38,13 @@ int main(int argc, char* argv[])
     desc.add_options()
         ("help,h", "produce help message")
         ("input",
-            po::value<vector<string> >()->composing(),
+            po::value<vector<string>>()->composing(),
             "name of the input files" )
-        ("sync,s", "synchronize the node base omitting the non-matching nodes for the fair evaluation."
-			" The node base is selected automatically as a clustering having the least number of nodes.")
+        ("sync,s",
+            po::value<string>(),
+            "synchronize the node base omitting the non-matching nodes\n"
+            "NOTE: The node base is either the first input file or '-' (automatic selection"
+            " of the input file having the least number of nodes)")
         ("id-remap,i", "remap ids allowing arbitrary input ids (non-contiguous ranges)"
             ", otherwise ids should form a solid range and start from 0 or 1")
         ("nmis,n", "output both NMI [max] and NMI_sqrt")
@@ -72,8 +75,14 @@ int main(int argc, char* argv[])
         return 1;
     }
     vector< string > positionals;
+    // Whether the node base is explicitly specified as the first input file (not "-")
+    const bool  ndbase1 = vm.count("sync") && vm["sync"].as<string>().compare("-");
     try {
-        positionals = vm["input"].as<vector<string> >();
+        // Consider that the first input file can be a sync node base
+        if(ndbase1)
+            positionals.push_back(vm["sync"].as<string>());
+        for(auto& finp: vm["input"].as<vector<string>>())
+            positionals.push_back(finp);
     } catch ( boost::bad_any_cast const& ) {
         fprintf(stderr, "Please, provide two input files to proceed. Use `gecmi -h` for more info\n");
         throw;
@@ -143,11 +152,14 @@ int main(int argc, char* argv[])
     if(b1lnum != b2lnum) {
         const bool  sync = vm.count("sync");
         fprintf(stderr, "WARNING, evaluating collections have different number of nodes: %lu != %lu"
-            ", sync enabled: %s\n", b1lnum, b2lnum, sync ? "yes" : "no");
+            ", sync enabled: %s (forced to finp1: %s)\n", b1lnum, b2lnum
+            , sync ? "yes" : "no", ndbase1 ? "yes" : "no");
 
         // Synchronize the number of nodes in both collections if required
         if (sync) {
-            if(b1lnum < b2lnum) {  // bcp1 is the base for the sync, the nodes are removed from bcp2
+            // Sync to bcp1 if the sync is automatic ("-") and bcp1 has the lowest number of nodes
+            // or if the sync is forced to bcp1 (not "-")
+            if(b1lnum <= b2lnum || ndbase1) {  // bcp1 is the base for the sync, the nodes are removed from bcp2
                 bcp2.sync(bcp1);
                 b2lnum = bcp2.uniqlSize();
             } else {
@@ -155,15 +167,18 @@ int main(int argc, char* argv[])
                 b1lnum = bcp1.uniqlSize();
             }
 
-            // Throw the exception if the synchronization is failed
-            if(b1lnum != b2lnum)
-                throw domain_error("Input collections have different node base and can't be synchronized gracefully: "
-                    + to_string(b1lnum) + " != " + to_string(b2lnum)+ "\n");
+            // Show WARNING if the synchronization is failed
+            if(b1lnum != b2lnum) {
+                //throw domain_error("Input collections have different node base and can't be synchronized gracefully: "
+                //    + to_string(b1lnum) + " != " + to_string(b2lnum)+ "\n");
+                fprintf(stderr, "Input collections have different node base and can't be fully synchronized,"
+                    " partial synchronization: %lu != %lu\n", b1lnum, b2lnum);
+            }
         }
     }
 
-    const double risk = vm["risk" ].as< double>();
-    const double epvar  = vm["error"].as<double>();
+    const double risk = vm["risk" ].as<double>();
+    const double epvar = vm["error"].as<double>();
 
     calculated_info_t cit = calculate_till_tolerance( two_rel, risk, epvar
         , vm.count("fast"), b1lnum, b2lnum );

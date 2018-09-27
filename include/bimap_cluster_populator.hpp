@@ -11,8 +11,6 @@
 namespace gecmi {
 
 class bimap_cluster_populator;
-void sync(bimap_cluster_populator& bcp1, bimap_cluster_populator& bcp2);
-double fairRatio(const bimap_cluster_populator& bcp1, const bimap_cluster_populator& bcp2);
 
 template<typename MapT>
 size_t uniqSize(MapT& mc)
@@ -29,8 +27,8 @@ size_t uniqSize(MapT& mc)
 
 class bimap_cluster_populator: public input_interface
 {
-    friend void sync(bimap_cluster_populator& bcp1, bimap_cluster_populator& bcp2);
-    friend double fairRatio(const bimap_cluster_populator& bcp1, const bimap_cluster_populator& bcp2);
+    //friend void sync(bimap_cluster_populator& bcp1, bimap_cluster_populator& bcp2);
+    //friend double fairRatio(const bimap_cluster_populator& bcp1, const bimap_cluster_populator& bcp2);
 
     vertex_module_bimap_t& vmb;
     // left: Nodes, right: Clusters
