@@ -2,8 +2,11 @@
 Generalized Conventional Mutual Information (GenConvMI) - NMI for Overlapping clusters compatible with standard [NMI](http://www.cs.plu.edu/courses/csce436/art%202.pdf) value, pure C++ version producing a single executable.  
 GenConvMI applicable to evaluate both *overlapping (crisp and fuzzy) and multi-resolution clustering*: a single collection can contain all these mixed clusters (communities, modules) and be correctly evaluated, which is a unique feature. Moreover, the evaluating collections may contain duplicated clusters, which is useful for the semantic types evaluation (when differently named types actually have the same members, i.e. equivalent types exist).
 
-The paper: [Comparing network covers using mutual information](https://arxiv.org/abs/1202.0425) by Alcides Viamontes Esquivel, Martin Rosval, 2012.  
+The original paper: [Comparing network covers using mutual information](https://arxiv.org/abs/1202.0425) by Alcides Viamontes Esquivel, Martin Rosval, 2012.  
 (c) Alcides Viamontes Esquivel
+
+The paper describing implemented extensions: "Accuracy Evaluation of Overlapping and Multi-resolution Clustering Algorithms on Large Datasets" by Artem Lutov, Mourad Khayati and Philippe
+Cudré-Mauroux, 2018
 
 This implementation is part of the [PyCABeM](https://github.com/eXascaleInfolab/PyCABeM) benchmark. *GenConvNMI* is significantly reimplemented version of the original [gecmi](https://bitbucket.org/dsign/gecmi) with additional features, much better performance (~2 ORDERS faster, consumes 2x less memory and is more accurate on large networks than the original version), duplicated clusters support added, fully automated build and without the redundant dependencies (the Pyhton wrapper is removed) and more... This version evaluates both NMI and FNMI (optionally) considering overlaps.  
 FNMI is so called *Fair NMI*, see the paper [Is Normalized Mutual Information a Fair Measure for Comparing Community Detection Methods](http://ieeexplore.ieee.org/document/7403755/) by Alessia Amelio and Clara Pizzuti, ASONAM'15. However, FNMI is less meaningful and less fair than the standard NMI, because FNMI measure is affected by the number of clusters much more than by their actual structure that should be evaluated.  
@@ -64,9 +67,11 @@ Execution Options:
 ```
   -h [ --help ]                produce help message
   --input arg                  name of the input files
-  -s [ --sync ]                synchronize the node base, for example to fairly
-                               evaluate against top K selected clusters that 
-                               are subset of the original nodes
+  -s [ --sync ] arg            synchronize the node base omitting the 
+                               non-matching nodes
+                               NOTE: The node base is either the first input 
+                               file or '-' (automatic selection of the input 
+                               file having the least number of nodes)
   -i [ --id-remap ]            remap ids allowing arbitrary input ids 
                                (non-contiguous ranges), otherwise ids should 
                                form a solid range and start from 0 or 1
@@ -78,6 +83,8 @@ Execution Options:
                                accurate, but much faster on large networks
   -m [ --membership ] arg (=1) average expected membership of nodes in the 
                                clusters, > 0, typically >= 1
+  -d [ --retain-dups ]         retain duplicated clusters if any instead of 
+                               filtering them out (not recommended)
 ```
 If you want to tweak the precision, use the options `-e` and `-r`, to set the error and
 the risk respectively. See the [paper](http://arxiv.org/abs/1202.0425) for the meaning of these concepts.  
