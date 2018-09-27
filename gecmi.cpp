@@ -153,7 +153,7 @@ int main(int argc, char* argv[])
         const bool  sync = vm.count("sync");
         fprintf(stderr, "WARNING, evaluating collections have different number of nodes: %lu != %lu"
             ", sync enabled: %s (forced to finp1: %s)\n", b1lnum, b2lnum
-            , sync ? "yes" : "no", ndbase1 ? "yes" : "no");
+            , sync ? "yes" : "no (the quality will be penalized)", ndbase1 ? "yes" : "no");
 
         // Synchronize the number of nodes in both collections if required
         if (sync) {
@@ -166,13 +166,12 @@ int main(int argc, char* argv[])
                 bcp1.sync(bcp2);  // bcp2 is the base for the sync, the nodes are removed from bcp1
                 b1lnum = bcp1.uniqlSize();
             }
-
-            // Show WARNING if the synchronization is failed
+            // Show WARNING if the synchronization is failed or
             if(b1lnum != b2lnum) {
                 //throw domain_error("Input collections have different node base and can't be synchronized gracefully: "
                 //    + to_string(b1lnum) + " != " + to_string(b2lnum)+ "\n");
-                fprintf(stderr, "Input collections have different node base and can't be fully synchronized,"
-                    " partial synchronization: %lu != %lu\n", b1lnum, b2lnum);
+                fprintf(stderr, "WARNING, full synchronization failed, the nodes in the collections differ"
+                " after the partial synchronization: %lu != %lu\n", b1lnum, b2lnum);
             }
         }
     }
