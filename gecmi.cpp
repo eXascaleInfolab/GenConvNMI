@@ -187,7 +187,7 @@ int main(int argc, char* argv[])
         const auto b2rnum = bcp2.uniqrSize();
         printf("NMI_max: %G, FNMI: %G, NMI_sqrt: %G; cls1: %lu, cls2: %lu\n", cit.nmi
               // Note: 2^x is used instead of e^x to have the same base as in the log
-            , cit.nmi * pow(2, -double(abs(b1rnum - b2rnum)) / std::max(b1rnum, b2rnum))
+            , cit.nmi * pow(2, -abs(double(b1rnum - b2rnum)) / std::max(b1rnum, b2rnum))
             , cit.nmi_sqrt, b1rnum, b2rnum);
     } else if (vm.count("nmis"))
         printf("NMI_max: %G, NMI_sqrt: %G\n", cit.nmi, cit.nmi_sqrt);
